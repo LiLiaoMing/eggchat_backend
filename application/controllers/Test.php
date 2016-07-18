@@ -14,10 +14,13 @@ class Test extends Service_Controller {
     }
     public function index_get() 
     {
+        $token = $this->qb->generateSession();
+
         $this->response([
             'status' => 'success',
-            'message' => 'this is testing message',
-            'data' => 'real data will be coming soon.'
+            'message' => APPPATH,
+            'data' => 'real data will be coming soon.',
+            'token' => $token,
         ], REST_Controller::HTTP_BAD_REQUEST);       
     }
 

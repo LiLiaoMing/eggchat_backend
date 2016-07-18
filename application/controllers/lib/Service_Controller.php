@@ -4,14 +4,20 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH . './libraries/REST_Controller.php';
+require APPPATH . './libraries/QBconfig.php';
+require APPPATH . './libraries/QBhelper.php';
 require 'Validator.php';
 require 'Authentication.php';
 require 'apidoc_define.php';
 
 class Service_Controller extends REST_Controller {
 
+    public $qb;
+
     function __construct()
     {
+        $this->qb = new QBhelper();
+
         // Construct the parent class
         parent::__construct();
     }

@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'rkc_review',
+	'hostname' => 'eggchatdbinstance.cfd93gwzevf7.us-west-2.rds.amazonaws.com',
+	'username' => 'eggchat_user',
+	'password' => 'Rlatjddlf123',
+	'database' => 'eggchat_db',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
