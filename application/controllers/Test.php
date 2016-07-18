@@ -15,7 +15,7 @@ class Test extends Service_Controller {
     public function index_get() 
     {
         $this->response([
-            'status' => 'success', // "success", "fail", "not available", 
+            'status' => 'success',
             'message' => 'this is testing message',
             'data' => 'real data will be coming soon.'
         ], REST_Controller::HTTP_BAD_REQUEST);       
