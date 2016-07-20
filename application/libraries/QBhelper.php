@@ -6,32 +6,29 @@ class QBhelper {
 
 	function __construct() {
 
-		$this->latestErr = "";
 	}
 
 	/*--------------------------------------------------------------------------------------------------------
-		Authorize to QB and get Token...
-	_________________________________________________________________________________________________________*/
+	 *
+	 *      Genernate new session token
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
 
 	public function generateSession() {
+		
 		// Generate signature
 		$nonce = rand();
 		$timestamp = time(); // time() method must return current timestamp in UTC but seems like hi is return timestamp in current time zone
 		$signature_string = "application_id=" . QB_APP_ID . "&auth_key=" . QB_AUTH_KEY . "&nonce=" . $nonce . "&timestamp=" . $timestamp;
-
 		$signature = hash_hmac('sha1', $signature_string , QB_AUTH_SECRET);
 
-		//echo $signature;
-		//echo $timestamp;
-
-		// Build post body
 		$post_body = http_build_query( array(
 			'application_id' => QB_APP_ID,
 			'auth_key' => QB_AUTH_KEY,
 			'timestamp' => $timestamp,
 			'nonce' => $nonce,
-			'signature' => $signature,
-		));
+			'signature' => $signature
+		));	
 
 		// Configure cURL
 		$curl = curl_init();
@@ -44,141 +41,208 @@ class QBhelper {
 		// Execute request and read response
 		$response = curl_exec($curl);
 
-		$token = null;
-
+		$result = null;
+		ob_start();
 		try {
-			$this->authInfo = json_decode($response);
-			$token = $this->authInfo->session->token;
+			$result = json_decode($response)->session->token;
 		}
 		catch (Exception $e) {
-			curl_close($curl);
-			return null;
 		}
 
 		// Close connection
 		curl_close($curl);
-
-		return $token;
+		ob_end_clean();
+		return $result;
 	}
 
-	/*--------------------------------------------------------------------------------------------------------
-		Create new user...
-	_________________________________________________________________________________________________________*/
 
-	public function signupUser($token, $login, $email, $password) {
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Signup
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+	public function signupUser($fullname, $username, $email, $phone, $avatar) {
+		$token = $this->generateSession();
 
 		$request = json_encode(array(
 			'user' => array(
-		 		'login' => $login,
+				'full_name' => $fullname,
+		 		'login' => $username,
 		  		'email' => $email,
-		  		'password' => $password,
+		  		'password' => QB_DEFAULT_PASSWORD,
+		  		'phone' => $phone,
+		  		'website' => $avatar,
 		  	)
 		));
 
 		$ch = curl_init();
-
 		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_USER); // Full path is - https://api.quickblox.com/auth.json
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 		  'Content-Type: application/json',
 		  'QuickBlox-REST-API-Version: 0.1.0',
 		  'QB-Token: ' . $token
 		));
-
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		$response = curl_exec($ch);
-
-		$user = null;
-		/*
-
-		*/
-		ob_start();
-		try {
-			$resp = json_decode($response);
-			$error = $resp->errors;
-
-			if ($error) {
-				$this->latestErr = json_encode($error);
-				return null;
-			}
-
-			$user = json_decode($response)->user;
-		}
-		catch (Exception $e) {
-			curl_close($ch);
-			return null;
-		}
-
-		ob_end_clean();
-		curl_close($ch);
-
-		return $user;
-
-	}
-
-
-
-	/*--------------------------------------------------------------------------------------------------------
-
-		Sign in ...
-
-	_________________________________________________________________________________________________________*/
-
-	public function signinUser($qbToken, $email, $password) {
-		$request = json_encode(array(
-			//'login' => $login,
-	  		'email' => $email,
-	  		'password' => $password,
-		));
-		 
-		$ch = curl_init();
-
-		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_LOGIN); // Full path is - https://api.quickblox.com/auth.json
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		  'Content-Type: application/json',
-		  'QuickBlox-REST-API-Version: 0.1.0',
-		  'QB-Token: ' . $qbToken
-		));
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		 
-		$response = curl_exec($ch);
-
-		$user = null;
 		
-		/*
-
-		*/
+		$result = null;
+		
 		ob_start();
-
 		try {
-			$user = json_decode($response)->user;
+			$result = json_decode($response);
 		}
 		catch (Exception $e) {
-			$this->latestErr = json_decode($response);
-			curl_close($ch);
-			return null;
+			$result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		}
-
-		ob_end_clean();
-
 		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
 
-		$this->latestErr = "";
-		return $user;
+
+
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Signin
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+
+	public function signinUser($username) {
+		
+		$nonce = rand();
+		$timestamp = time(); // time() method must return current timestamp in UTC but seems like hi is return timestamp in current time zone
+		$signature_string = "application_id=" . QB_APP_ID . "&auth_key=" . QB_AUTH_KEY . "&nonce=" . $nonce . "&timestamp=" . $timestamp."&user[login]=".$username."&user[password]=".QB_DEFAULT_PASSWORD;
+		$signature = hash_hmac('sha1', $signature_string , QB_AUTH_SECRET);
+
+		$post_body = http_build_query( array(
+			'application_id' => QB_APP_ID,
+			'auth_key' => QB_AUTH_KEY,
+			'timestamp' => $timestamp,
+			'nonce' => $nonce,
+			'signature' => $signature,
+			'user' => array('login'=>$username, 'password'=>QB_DEFAULT_PASSWORD)
+		));
+		
+
+		// Configure cURL
+		$curl = curl_init();
+		curl_setopt($curl, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_AUTH); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($curl, CURLOPT_POST, true); // Use POST
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $post_body); // Setup post body
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true); // Receive server response
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+
+		// Execute request and read response
+		$response = curl_exec($curl);
+		$result = null;
+
+		ob_start();
+		try {
+			$result = json_decode($response);
+		}
+		catch (Exception $e) {
+		}
+		curl_close($curl);
+		ob_end_clean();
+		return $result;
 	}
 
 	/*--------------------------------------------------------------------------------------------------------
-		Sign out ...
-	_________________________________________________________________________________________________________*/
+	 *
+	 *      Sign out
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
 	public function signoutUser($email) {
 
 	}
 
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Create a new group
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+	public function createGroup($token, $type, $name, $ids) {
+
+		$request = json_encode(array(
+			'type' => $type,
+	 		'name' => $name,
+	  		'occupants_ids' => $ids
+		));
+
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_DIALOG); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		  'Content-Type: application/json',
+		  'QuickBlox-REST-API-Version: 0.1.0',
+		  'QB-Token: ' . $token
+		));
+		$response = curl_exec($ch);
+		
+		$result = null;
+		
+		ob_start();
+		try {
+			$result = json_decode($response);
+			// $result = $response;
+		}
+		catch (Exception $e) {
+			// $result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$result = 'error';
+		}
+		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Get group
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+	public function getGroup($type, $name, $ids) {
+		$this->generateSession();
+
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_DIALOG); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		  'Content-Type: application/json',
+		  'QuickBlox-REST-API-Version: 0.1.0',
+		  'QB-Token: ' . $this->qb_token
+		));
+		$response = curl_exec($ch);
+		
+		$result = null;
+		
+		ob_start();
+		try {
+			$result = json_decode($response);
+			// $result = $response;
+		}
+		catch (Exception $e) {
+			// $result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$result = 'error';
+		}
+		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
+
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Send GCM
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
 	public function sendGCM($id, $content) {
 		// API access key from Google API's Console
 
@@ -218,8 +282,10 @@ class QBhelper {
 	}
 
 	/*--------------------------------------------------------------------------------------------------------
-		Send Apple Push notification to specific user ...
-	_________________________________________________________________________________________________________*/
+	 *
+	 *      Send APN
+	 * 
+	 *--------------------------------------------------------------------------------------------------------*/
 	public function sendAPN($deviceToken, $content, $pemFilename = "") {
 		if ($pemFilename == "")
 			$pemFilename = 'pushcert.pem';
@@ -299,28 +365,8 @@ class QBhelper {
 
 		return $undelivered;
 	}
-/*
 
-	// function for fixing Turkish characters
 
-		function tr_to_utf($text) {
-
-		    $text = trim($text);
-
-		    $search = array('Ü', 'Þ', 'Ð', 'Ç', 'Ý', 'Ö', 'ü', 'þ', 'ð', 'ç', 'ý', 'ö');
-
-		    $replace = array('Ãœ', 'Åž', '&#286;ž', 'Ã‡', 'Ä°', 'Ã–', 'Ã¼', 'ÅŸ', 'ÄŸ', 'Ã§', 'Ä±', 'Ã¶');
-
-		    $new_text = str_replace($search, $replace, $text);
-
-		    return $new_text;
-
-		}
-
-*/
-
+	
 }
-
-
-
 ?>

@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH . './libraries/REST_Controller.php';
-require APPPATH . './libraries/QBconfig.php';
+require APPPATH . './libraries/Constants.php';
 require APPPATH . './libraries/QBhelper.php';
 require 'Validator.php';
 require 'Authentication.php';
@@ -13,6 +13,8 @@ require 'apidoc_define.php';
 class Service_Controller extends REST_Controller {
 
     public $qb;
+    public $uid = null;
+    public $qb_token = null;
 
     function __construct()
     {
@@ -20,6 +22,7 @@ class Service_Controller extends REST_Controller {
 
         // Construct the parent class
         parent::__construct();
+        $this->load->model('token_model', 'token');
     }
 
     /*
@@ -89,15 +92,28 @@ class Service_Controller extends REST_Controller {
     protected function check_auth() 
     {
         $v = $this->new_validator($this->head());
-        $v->rule('required', ['authentication']);
+        $v->rule('required', ['token']);
 
         if($v->validate())
-            if (Authentication::check($this->head('authentication')))
+        {
+            // if ($this->head('token') == "free")
+            // {
+            //     $this->uid = 1;
+            //     return true;
+            // }
+            
+            $tokens = $this->token->get(null, $this->head('token'));
+            if (count($tokens) > 0)
+            {
+                $this->uid = $tokens[0]->uid;
+                $this->qb_token = $tokens[0]->qb_token;
                 return true;
+            }
+        }
 
         $this->response([
                 'status' => 'fail', // "success", "fail", "not available", 
-                'message' => 'This is not authenticated!',
+                'message' => 'This is not authenticated! Invalid token!',
                 'result' => null
             ], REST_Controller::HTTP_UNAUTHORIZED);  
 
