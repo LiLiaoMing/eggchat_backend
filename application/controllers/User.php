@@ -73,7 +73,7 @@ class User extends Service_Controller {
                     'status' => 'fail', // "success", "fail", "not available", 
                     'message' => 'Invalid username, already used by another user.',
                     'code' => 501
-                ], REST_Controller::HTTP_BAD_REQUEST);
+                ], REST_Controller::HTTP_OK);
             }
 
             if ( count($this->user->get(null, null, null, null,  $this->post('email'))) > 0)
@@ -82,7 +82,7 @@ class User extends Service_Controller {
                     'status' => 'fail', // "success", "fail", "not available", 
                     'message' => "Invalid email, already used by another user.",
                     'code' => 501
-                ], REST_Controller::HTTP_BAD_REQUEST);
+                ], REST_Controller::HTTP_OK);
             }
 
             if ( $this->post('mobile') && (count($this->user->get(null, null, null, null, null, $this->post('mobile'))) > 0))
@@ -91,29 +91,14 @@ class User extends Service_Controller {
                     'status' => 'fail', // "success", "fail", "not available", 
                     'message' => 'Invalid mobile number, already used by another user.',
                     'code' => 501
-                ], REST_Controller::HTTP_BAD_REQUEST);
-            }
-
-            $result = $this->qb->signupUser( $this->post('full_name'), 
-                                   $this->post('username'),
-                                   $this->post('email'), 
-                                   $this->post('mobile'), 
-                                   $this->post('avatar'));
-            
-            if (isset($result->errors))
-            {
-                $this->response([
-                    'status' => 'fail', // "success", "fail", "not available", 
-                    'message' => $result->errors,
-                    'code' => 501
-                ], REST_Controller::HTTP_BAD_REQUEST);
+                ], REST_Controller::HTTP_OK);
             }
 
             $new_one = array (
-                'qb_id' => $result->user->id,
+                'qb_id' => null,
                 'username' => $this->post('username'),
-                'password' => $this->post('password'),
                 'mobile' => $this->post('mobile'),
+                'password' => $this->post('password'),
                 'email' => $this->post('email'),
                 'full_name' => $this->post('full_name'),
                 'avatar' => $this->post('avatar'),
@@ -133,20 +118,43 @@ class User extends Service_Controller {
                 'permission' => $this->post('permission')            
             );
             $new_user_id = $this->user->insert($new_one);
+
+
+            $qb_result = $this->qb->signupUser( $this->post('full_name'), 
+                                   $this->post('username'),
+                                   $this->post('email'), 
+                                   $this->post('mobile'), 
+                                   $this->post('avatar'),
+                                   $new_user_id);
             
+            if (isset($qb_result->errors))
+            {
+                $this->user->delete($new_user_id);
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => $qb_result->errors,
+                    'code' => 501
+                ], REST_Controller::HTTP_OK);
+            }
+
+            $update_one = array ('id' => $new_user_id, 'qb_id'=> $qb_result->user->id);
+            $this->user->update($update_one);
+            $new_one['qb_id'] = $update_one['qb_id'];
+
+            unset($new_one['password']);
             $this->response([
                 'status' => 'success', // "success", "fail", "not available", 
                 'message' => '',
                 'code' => 200,
                 'data' => $new_one
-            ], REST_Controller::HTTP_CREATED);    
+            ], REST_Controller::HTTP_OK);    
         }
         else
         {
             $this->response([
                 'status' => 'fail', // "success", "fail", "not available", 
                 'message' => $v->errors()
-            ], REST_Controller::HTTP_BAD_REQUEST);
+            ], REST_Controller::HTTP_OK);
         }
     }
 
@@ -186,7 +194,7 @@ class User extends Service_Controller {
                     'status' => 'fail', // "success", "fail", "not available", 
                     'message' => "Invalid credential.",
                     'code'=> 504
-                ], REST_Controller::HTTP_BAD_REQUEST);
+                ], REST_Controller::HTTP_OK);
             }
 
             $result = $this->qb->signinUser($this->head('username'));
@@ -196,7 +204,7 @@ class User extends Service_Controller {
                     'status' => 'fail', // "success", "fail", "not available", 
                     'message' => $result,
                     'code' => 501
-                ], REST_Controller::HTTP_BAD_REQUEST);
+                ], REST_Controller::HTTP_OK);
             }
             
             $qb_token = $result->session->token;
@@ -204,11 +212,13 @@ class User extends Service_Controller {
             $new_one = array (
                 'uid' => $users[0]->id,
                 'token' => md5(time()),
-                'qb_token' => $qb_token
+                'qb_token' => $qb_token,
+                'updated_at' => date("Y-m-d H:i:s")
             );
             $this->token->delete($users[0]->id);
             $this->token->insert($new_one);
 
+            unset($users[0]->password);
             $this->response([
                     'status' => 'success', // "success", "fail", "not available", 
                     'message' => '',
@@ -222,7 +232,7 @@ class User extends Service_Controller {
                 'status' => 'fail', // "success", "fail", "not available", 
                 'message' => $v->errors(),
                 'data' => null
-            ], REST_Controller::HTTP_BAD_REQUEST);
+            ], REST_Controller::HTTP_OK);
         }
     }
 }

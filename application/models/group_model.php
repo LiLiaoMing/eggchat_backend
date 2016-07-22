@@ -23,24 +23,18 @@ class Group_model extends CI_Model {
         return ($this->db->affected_rows() != 1) ? false : true;
     }
 
-    function get( $id = null,
-                  $email = null,
-                  $password = null,
-                  $unique_name = null,
+    function get( $qb_id = null,
+                  $owner_id = null,
                   $limit = null,
                   $offset = null)
     {
         $this->db->select('*');
         $this->db->from($this->table);
 
-        if ($id)
-            $this->db->where('id', $id);
-        if ($email)
-            $this->db->where('email', $email);
-        if ($password)
-            $this->db->where('password', $password);
-        if ($unique_name)
-            $this->db->where('unique_name', $unique_name);
+        if ($qb_id)
+            $this->db->where('qb_id', $qb_id);
+        if ($owner_id)
+            $this->db->where('owner_id', $owner_id);
         
         if ($limit == null)
             $limit = PHP_INT_MAX;

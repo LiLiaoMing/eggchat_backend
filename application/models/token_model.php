@@ -26,6 +26,12 @@ class Token_model extends CI_Model {
         return ($this->db->affected_rows() != 1) ? false : true;
     }
 
+    function update($new_one)
+    {
+        $this->db->where('id', $new_one['id']);
+        $this->db->update($this->table, $new_one);
+        return ($this->db->affected_rows() != 1) ? false : true;
+    }
 
     function get( $uid = null,
                   $token = null,

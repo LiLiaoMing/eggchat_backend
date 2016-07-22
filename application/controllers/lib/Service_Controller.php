@@ -13,16 +13,17 @@ require 'apidoc_define.php';
 class Service_Controller extends REST_Controller {
 
     public $qb;
-    public $uid = null;
-    public $qb_token = null;
+    public $current_user;
 
     function __construct()
     {
         $this->qb = new QBhelper();
+        $this->current_user = array('uid' => null, 'username' => null, 'qb_token' => null);
 
         // Construct the parent class
         parent::__construct();
         $this->load->model('token_model', 'token');
+        $this->load->model('user_model', 'user');
     }
 
     /*
@@ -98,15 +99,17 @@ class Service_Controller extends REST_Controller {
         {
             // if ($this->head('token') == "free")
             // {
-            //     $this->uid = 1;
+            //     $this->current_user['uid'] = 1;
             //     return true;
             // }
             
             $tokens = $this->token->get(null, $this->head('token'));
             if (count($tokens) > 0)
             {
-                $this->uid = $tokens[0]->uid;
-                $this->qb_token = $tokens[0]->qb_token;
+                $this->current_user['uid'] = $tokens[0]->uid;
+                $this->current_user['username'] = $this->user->get($tokens[0]->uid)[0]->username;
+                $this->current_user['qb_token'] = $this->update_qb_token($this->current_user['uid']);
+
                 return true;
             }
         }
@@ -115,8 +118,61 @@ class Service_Controller extends REST_Controller {
                 'status' => 'fail', // "success", "fail", "not available", 
                 'message' => 'This is not authenticated! Invalid token!',
                 'result' => null
-            ], REST_Controller::HTTP_UNAUTHORIZED);  
+            ], REST_Controller::HTTP_OK);  
 
         return false;
+    }
+
+    protected function update_qb_token($uid) 
+    {
+        $qb_token = null;
+        $user = $this->user->get($uid)[0];
+        $tokens = $this->token->get($uid);
+
+        if (count($tokens) > 0)
+        {
+            $diff_sec = abs(strtotime($tokens[0]->updated_at) - strtotime(date('Y-m-d H:i:s')));
+            $diff_hour = floor($diff_sec/(60 * 60));
+            if ($diff_hour > 1)
+            {
+                $result = $this->qb->signinUser( $user->username );
+                if (isset($result->errors))
+                    return null;
+                
+                $qb_token = $result->session->token;
+
+                $new_one = array (
+                    'id' => $tokens[0]->id,
+                    'qb_token' => $qb_token,
+                    'updated_at' => date("Y-m-d H:i:s")
+                );
+                $this->token->update($new_one);
+            }
+            else
+            {
+                $qb_token = $tokens[0]->qb_token;
+                $new_one = array( 'id' => $tokens[0]->id, 'updated_at' => date('Y-m-d H:i:s'));
+                $this->token->update($new_one);
+            }
+        }
+        else
+        {
+
+            $result = $this->qb->signinUser( $user->username );
+            if (isset($result->errors))
+                return null;
+
+            $qb_token = $result->session->token;
+
+
+            $new_one = array (
+                'uid' => $uid,
+                'token' => md5(time()),
+                'qb_token' => $qb_token,
+                'updated_at' => date("Y-m-d H:i:s")
+            );
+            $this->token->insert($new_one);
+        }
+        return $qb_token;
     }
 }
