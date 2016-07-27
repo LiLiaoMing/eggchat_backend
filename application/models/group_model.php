@@ -53,7 +53,7 @@ class Group_model extends CI_Model {
         $current_user = $this->db->get()->result()[0];
 
         
-        $this->db->select('*');
+        $this->db->select('groups.*');
         $this->db->from('groups');
         $this->db->join('users', 'groups.owner_id = users.id', 'left');
 

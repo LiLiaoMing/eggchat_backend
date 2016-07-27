@@ -56,6 +56,7 @@ class Group extends Service_Controller {
             $new_one = array (
                 'qb_id' => $qb_result->_id,
                 'owner_id' => $this->current_user['uid'],
+                'name' => $this->post('name')
             );
             $new_user_id = $this->group->insert($new_one);
                 
@@ -81,7 +82,7 @@ class Group extends Service_Controller {
      * @apiSuccess {String}     status              Status of the API call.
      * @apiSuccess {String}     message             Description of the API call status.
      * @apiSuccess {Number}     code                Code (200: success)
-     * @apiSuccess {Object[]}   groups              Array of group IDs
+     * @apiSuccess {Object[]}   groups              Array of groups
      */
 
     /**

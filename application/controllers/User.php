@@ -209,14 +209,28 @@ class User extends Service_Controller {
             
             $qb_token = $result->session->token;
 
-            $new_one = array (
-                'uid' => $users[0]->id,
-                'token' => md5(time()),
-                'qb_token' => $qb_token,
-                'updated_at' => date("Y-m-d H:i:s")
-            );
-            $this->token->delete($users[0]->id);
-            $this->token->insert($new_one);
+            $tokens = $this->token->get($users[0]->id);
+            if (count($tokens) > 0)
+            {
+                $new_one = array (
+                    'id' => $tokens[0]->id,
+                    'token' => $tokens[0]->token,
+                    'qb_token' => $qb_token,
+                    'updated_at' => date("Y-m-d H:i:s")
+                );
+                $this->token->update($new_one);    
+            }
+            else
+            {
+                $new_one = array (
+                    'uid' => $users[0]->id,
+                    'token' => md5(time()),
+                    'qb_token' => $qb_token,
+                    'updated_at' => date("Y-m-d H:i:s")
+                );
+                $this->token->insert($new_one);    
+            }
+            
 
             unset($users[0]->password);
             $this->response([

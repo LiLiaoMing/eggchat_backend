@@ -76,12 +76,12 @@ $query_builder = TRUE;
 $db['default'] = array(
 	'dsn'	=> '',
 	
-	// 'hostname' => 'eggchatdbinstance.cfd93gwzevf7.us-west-2.rds.amazonaws.com',
-	// 'username' => 'eggchat_user',
-	// 'password' => 'Rlatjddlf123',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
+	'hostname' => 'eggchatdbinstance.cfd93gwzevf7.us-west-2.rds.amazonaws.com',
+	'username' => 'eggchat_user',
+	'password' => 'Rlatjddlf123',
+	// 'hostname' => 'localhost',
+	// 'username' => 'root',
+	// 'password' => '',
 
 	'database' => 'eggchat_db',
 	'dbdriver' => 'mysqli',
