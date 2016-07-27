@@ -11,7 +11,7 @@ class User extends Service_Controller {
         // Construct the parent class
         parent::__construct();
 
-        $this->load->model('user_model', 'user');
+        // $this->load->model('user_model', 'user');
     }
     
     /**
@@ -52,110 +52,114 @@ class User extends Service_Controller {
      */
     public function index_post()
     {
-
-        $v = $this->new_validator($this->post());
-        $v->rule('required', ['username', 'mobile', 'email', 'password', 'level']);
-        $v->rule('integer', ['level', 'max_per_group', 'max_circulate', 'max_member', 'max_group']);
-        $v->rule('numeric', ['mobile']);
-        $v->rule('email', ['email']);
-        $v->rule('url', ['avatar']);
-        $v->rule('date', ['start_date', 'expiry_date']);
-
-        if ($v->validate())
-        {
-            /*******************************************************************************************
-             * Insert new record to table(users) 
-             *******************************************************************************************/
-
-            if ( count($this->user->get(null, $this->post('username'))) > 0)
-            {
-                $this->response([
-                    'status' => 'fail', // "success", "fail", "not available", 
-                    'message' => 'Invalid username, already used by another user.',
-                    'code' => 501
-                ], REST_Controller::HTTP_OK);
-            }
-
-            if ( count($this->user->get(null, null, null, null,  $this->post('email'))) > 0)
-            {
-                $this->response([
-                    'status' => 'fail', // "success", "fail", "not available", 
-                    'message' => "Invalid email, already used by another user.",
-                    'code' => 501
-                ], REST_Controller::HTTP_OK);
-            }
-
-            if ( $this->post('mobile') && (count($this->user->get(null, null, null, null, null, $this->post('mobile'))) > 0))
-            {
-                $this->response([
-                    'status' => 'fail', // "success", "fail", "not available", 
-                    'message' => 'Invalid mobile number, already used by another user.',
-                    'code' => 501
-                ], REST_Controller::HTTP_OK);
-            }
-
-            $new_one = array (
-                'qb_id' => null,
-                'username' => $this->post('username'),
-                'mobile' => $this->post('mobile'),
-                'password' => $this->post('password'),
-                'email' => $this->post('email'),
-                'full_name' => $this->post('full_name'),
-                'avatar' => $this->post('avatar'),
-                'reply_email' => $this->post('reply_email'),
-                'max_per_group' => $this->post('max_per_group'),
-                'max_circulate' => $this->post('max_circulate'),
-                'department' => $this->post('department'),  
-                'pri_contact' => $this->post('pri_contact'),
-                'pri_contact_no' => $this->post('pri_contact_no'),
-                'note' => $this->post('note'),
-                'max_member' => $this->post('max_member'),
-                'max_group' => $this->post('max_group'),
-                'start_date' => $this->post('start_date'),
-                'expiry_date' => $this->post('expiry_date'),
-                'level' => $this->post('level'),
-                'path' => $this->post('path'),
-                'permission' => $this->post('permission')            
-            );
-            $new_user_id = $this->user->insert($new_one);
-
-
-            $qb_result = $this->qb->signupUser( $this->post('full_name'), 
-                                   $this->post('username'),
-                                   $this->post('email'), 
-                                   $this->post('mobile'), 
-                                   $this->post('avatar'),
-                                   $new_user_id);
-            
-            if (isset($qb_result->errors))
-            {
-                $this->user->delete($new_user_id);
-                $this->response([
-                    'status' => 'fail', // "success", "fail", "not available", 
-                    'message' => $qb_result->errors,
-                    'code' => 501
-                ], REST_Controller::HTTP_OK);
-            }
-
-            $update_one = array ('id' => $new_user_id, 'qb_id'=> $qb_result->user->id);
-            $this->user->update($update_one);
-            $new_one['qb_id'] = $update_one['qb_id'];
-
-            unset($new_one['password']);
-            $this->response([
-                'status' => 'success', // "success", "fail", "not available", 
-                'message' => '',
-                'code' => 200,
-                'data' => $new_one
-            ], REST_Controller::HTTP_OK);    
-        }
-        else
-        {
-            $this->response([
+        $this->response([
                 'status' => 'fail', // "success", "fail", "not available", 
                 'message' => $v->errors()
             ], REST_Controller::HTTP_OK);
-        }
+
+        // $v = $this->new_validator($this->post());
+        // $v->rule('required', ['username', 'mobile', 'email', 'password', 'level']);
+        // $v->rule('integer', ['level', 'max_per_group', 'max_circulate', 'max_member', 'max_group']);
+        // $v->rule('numeric', ['mobile']);
+        // $v->rule('email', ['email']);
+        // $v->rule('url', ['avatar']);
+        // $v->rule('date', ['start_date', 'expiry_date']);
+
+        // if ($v->validate())
+        // {
+        //     /*******************************************************************************************
+        //      * Insert new record to table(users) 
+        //      *******************************************************************************************/
+
+        //     if ( count($this->user->get(null, $this->post('username'))) > 0)
+        //     {
+        //         $this->response([
+        //             'status' => 'fail', // "success", "fail", "not available", 
+        //             'message' => 'Invalid username, already used by another user.',
+        //             'code' => 501
+        //         ], REST_Controller::HTTP_OK);
+        //     }
+
+        //     if ( count($this->user->get(null, null, null, null,  $this->post('email'))) > 0)
+        //     {
+        //         $this->response([
+        //             'status' => 'fail', // "success", "fail", "not available", 
+        //             'message' => "Invalid email, already used by another user.",
+        //             'code' => 501
+        //         ], REST_Controller::HTTP_OK);
+        //     }
+
+        //     if ( $this->post('mobile') && (count($this->user->get(null, null, null, null, null, $this->post('mobile'))) > 0))
+        //     {
+        //         $this->response([
+        //             'status' => 'fail', // "success", "fail", "not available", 
+        //             'message' => 'Invalid mobile number, already used by another user.',
+        //             'code' => 501
+        //         ], REST_Controller::HTTP_OK);
+        //     }
+
+        //     $new_one = array (
+        //         'qb_id' => null,
+        //         'username' => $this->post('username'),
+        //         'mobile' => $this->post('mobile'),
+        //         'password' => $this->post('password'),
+        //         'email' => $this->post('email'),
+        //         'full_name' => $this->post('full_name'),
+        //         'avatar' => $this->post('avatar'),
+        //         'reply_email' => $this->post('reply_email'),
+        //         'max_per_group' => $this->post('max_per_group'),
+        //         'max_circulate' => $this->post('max_circulate'),
+        //         'department' => $this->post('department'),  
+        //         'pri_contact' => $this->post('pri_contact'),
+        //         'pri_contact_no' => $this->post('pri_contact_no'),
+        //         'note' => $this->post('note'),
+        //         'max_member' => $this->post('max_member'),
+        //         'max_group' => $this->post('max_group'),
+        //         'start_date' => $this->post('start_date'),
+        //         'expiry_date' => $this->post('expiry_date'),
+        //         'level' => $this->post('level'),
+        //         'path' => $this->post('path'),
+        //         'permission' => $this->post('permission')            
+        //     );
+        //     $new_user_id = $this->user->insert($new_one);
+
+
+        //     $qb_result = $this->qb->signupUser( $this->post('full_name'), 
+        //                            $this->post('username'),
+        //                            $this->post('email'), 
+        //                            $this->post('mobile'), 
+        //                            $this->post('avatar'),
+        //                            $new_user_id);
+            
+        //     if (isset($qb_result->errors))
+        //     {
+        //         $this->user->delete($new_user_id);
+        //         $this->response([
+        //             'status' => 'fail', // "success", "fail", "not available", 
+        //             'message' => $qb_result->errors,
+        //             'code' => 501
+        //         ], REST_Controller::HTTP_OK);
+        //     }
+
+        //     $update_one = array ('id' => $new_user_id, 'qb_id'=> $qb_result->user->id);
+        //     $this->user->update($update_one);
+        //     $new_one['qb_id'] = $update_one['qb_id'];
+
+        //     unset($new_one['password']);
+        //     $this->response([
+        //         'status' => 'success', // "success", "fail", "not available", 
+        //         'message' => '',
+        //         'code' => 200,
+        //         'data' => $new_one
+        //     ], REST_Controller::HTTP_OK);    
+        // }
+        // else
+        // {
+        //     $this->response([
+        //         'status' => 'fail', // "success", "fail", "not available", 
+        //         'message' => $v->errors()
+        //     ], REST_Controller::HTTP_OK);
+        // }
     }
 
 
