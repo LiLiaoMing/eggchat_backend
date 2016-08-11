@@ -29,9 +29,9 @@ class User extends Service_Controller {
      *
      * @apiParam {String} username         <code>mandatory</code> Username
      * @apiParam {String} password         <code>mandatory</code> Password
-     * @apiParam {String} mobile           <code>mandatory</code> Mobile number
      * @apiParam {String} email            <code>mandatory</code> User email
-     * @apiParam {Number} level             <code>mandatory</code>  User type (Ex: 1-Core, 2-Client, 3-Profile, 4-User, 5-Normal)
+     * @apiParam {Number} level            <code>mandatory</code>  User type (Ex: 1-Core, 2-Client, 3-Profile, 4-User, 5-Normal)
+     * @apiParam {String} mobile           <code>optional</code> Mobile number
      * @apiParam {String} avatar           <code>optional</code>  avatar image url
      * @apiParam {String} full_name        <code>optional</code>  User full name
      * @apiParam {String} reply_email      <code>optional</code>  Reply email
@@ -53,7 +53,7 @@ class User extends Service_Controller {
     public function index_post()
     {
         $v = $this->new_validator($this->post());
-        $v->rule('required', ['username', 'mobile', 'email', 'password', 'level']);
+        $v->rule('required', ['username', 'email', 'password', 'level']);
         $v->rule('integer', ['level', 'max_per_group', 'max_circulate', 'max_member', 'max_group']);
         $v->rule('numeric', ['mobile']);
         $v->rule('email', ['email']);
@@ -248,4 +248,287 @@ class User extends Service_Controller {
             ], REST_Controller::HTTP_OK);
         }
     }
+
+    /**
+     * @apiDefine SearchResponse
+     * @apiSuccess {Object[]}   users               Result of the API call.
+     */
+
+    /**
+     * @api {get} /user/search -(admin) Search
+     * @apiVersion 0.1.0
+     * @apiName Search
+     * @apiGroup User
+     *
+     * @apiParam {String} id               <code>optional</code> id of the User.
+     * @apiParam {String} level            <code>optional</code> level of the User.
+     * @apiParam {String} path             <code>optional</code> path of the User.
+     * @apiParam {String} username         <code>optional</code> username of the User.
+     * @apiParam {String} full_name        <code>optional</code> full name of the User.
+     * @apiParam {String} email            <code>optional</code> email of the User.
+     * @apiParam {String} mobile           <code>optional</code> mobile of the User.
+     * @apiParam {String} offset           <code>optional</code> Offset.
+     * @apiParam {String} amount           <code>optional</code> Amount per a page.
+     *
+     * @apiUse Authentication
+     *
+     * @apiUse SearchResponse
+     */
+    
+    public function search_get() 
+    {
+        if ($this->check_auth() == false)
+            return;
+
+        $v = $this->new_validator($this->get());
+        $v->rule('integer', ['id', 'level']);
+        $v->rule('email', ['email']);
+        $v->rule('numeric', ['mobile']);
+
+        if ($v->validate())
+        {
+            $this->response([
+                'status' => 'success', // "success", "fail", "not available", 
+                'message' => '',
+                'data' => [
+                    'result'=>$this->user->get($this->get('id'), 
+                                        $this->get('username'),
+                                        null,
+                                        $this->get('full_name'),
+                                        $this->get('email'),
+                                        $this->get('mobile'),
+                                        null, null,
+                                        $this->get('level'),
+                                        $this->get('path'),
+                                        $this->get('amount'),
+                                        $this->get('offset')),
+                    
+                    'count'=>$this->user->get_count($this->get('id'),
+                                        $this->get('username'),
+                                        null,
+                                        $this->get('full_name'),
+                                        $this->get('email'),
+                                        $this->get('mobile'),
+                                        null, null,
+                                        $this->get('level'),
+                                        $this->get('path'))
+                    ]
+            ], REST_Controller::HTTP_OK);    
+        }
+        else
+        {
+            $this->response([
+                'status' => 'fail', // "success", "fail", "not available", 
+                'message' => $v->errors(),
+                'data' => null
+            ], REST_Controller::HTTP_BAD_REQUEST);  
+        }
+    }
+
+
+    /**
+     * @api {put} /user/ -(admin) Update
+     * @apiVersion 0.1.0
+     * @apiName  UpdateUserInfo
+     * @apiGroup User
+     *
+     * @apiUse Authentication
+     *
+     * @apiParam {String} id               <code>mandatory</code> User ID
+     * @apiParam {String} username         <code>optional</code> Username
+     * @apiParam {String} password         <code>optional</code> Password
+     * @apiParam {String} mobile           <code>optional</code> Mobile number
+     * @apiParam {String} email            <code>optional</code> User email
+     * @apiParam {Number} level            <code>optional</code>  User type (Ex: 1-Core, 2-Client, 3-Profile, 4-User, 5-Normal)
+     * @apiParam {String} avatar           <code>optional</code>  avatar image url
+     * @apiParam {String} full_name        <code>optional</code>  User full name
+     * @apiParam {String} reply_email      <code>optional</code>  Reply email
+     * @apiParam {Number} max_per_group    <code>optional</code>  Max member limit per group
+     * @apiParam {Number} max_circulate    <code>optional</code>  Max number limit to circulate at a time
+     * @apiParam {String} department       <code>optional</code>  Department
+     * @apiParam {String} pri_contact      <code>optional</code>  Primary contact
+     * @apiParam {String} pri_contact_no   <code>optional</code>  Primary contact no
+     * @apiParam {String} note             <code>optional</code>  Note
+     * @apiParam {Number} max_member       <code>optional</code>  Max member limit to create
+     * @apiParam {Number} max_group        <code>optional</code>  Max group limit to create
+     * @apiParam {Date} start_date         <code>optional</code>  Start date
+     * @apiParam {Date} expiry_date        <code>optional</code>  Expiry date
+     * @apiParam {Date} path               <code>optional</code>  Parent tree path
+     * @apiParam {Date} permission         <code>optional</code>  Permission
+     * @apiParam {Number} disabled         <code>optional</code>  Disabled
+     *
+     * @apiUse Response
+     *
+     */
+    public function index_put()
+    {
+        if ($this->check_auth() == false)
+            return;
+
+        $v = $this->new_validator($this->put());
+        $v->rule('required', ['id']);
+        $v->rule('integer', ['id', 'level', 'max_per_group', 'max_circulate', 'max_member', 'max_group', 'disabled']);
+        $v->rule('numeric', ['mobile']);
+        $v->rule('email', ['email']);
+        $v->rule('url', ['avatar']);
+        $v->rule('date', ['start_date', 'expiry_date']);
+        
+        if ($v->validate())
+        {
+            $users = $this->user->get($this->put('id'));
+            
+            $user = array();
+
+            $new_one = array ('id' => $this->put('id'));
+
+            if ($this->put('username') != null)
+            {
+                $user['login'] = $this->put('username');
+                $new_one['username'] = $this->put('username');
+            }
+            if ($this->put('password') != null)
+                $new_one['password'] = $this->put('password');
+            if ($this->put('mobile') != null)
+            {
+                $user['phone'] = $this->put('mobile');
+                $new_one['mobile'] = $this->put('mobile');
+            }
+            if ($this->put('email') != null)
+            {
+                $user['email'] = $this->put('email');
+                $new_one['email'] = $this->put('email');
+            }
+            if ($this->put('level') != null)
+                $new_one['level'] = $this->put('level');
+            if ($this->put('avatar') != null)
+            {
+                $user['website'] = $this->put('avatar');
+                $new_one['avatar'] = $this->put('avatar');
+            }
+            if ($this->put('full_name') != null)
+            {
+                $user['full_name'] = $this->put('full_name');
+                $new_one['full_name'] = $this->put('full_name');
+            }
+            if ($this->put('reply_email') != null)
+                $new_one['reply_email'] = $this->put('reply_email');
+            if ($this->put('max_per_group') != null)
+                $new_one['max_per_group'] = $this->put('max_per_group');
+            if ($this->put('max_circulate') != null)
+                $new_one['max_circulate'] = $this->put('max_circulate');
+            if ($this->put('department') != null)
+                $new_one['department'] = $this->put('department');
+            if ($this->put('pri_contact') != null)
+                $new_one['pri_contact'] = $this->put('pri_contact');
+            if ($this->put('pri_contact_no') != null)
+                $new_one['pri_contact_no'] = $this->put('pri_contact_no');
+            if ($this->put('note') != null)
+                $new_one['note'] = $this->put('note');
+            if ($this->put('max_member') != null)
+                $new_one['max_member'] = $this->put('max_member');
+            if ($this->put('max_group') != null)
+                $new_one['max_group'] = $this->put('max_group');
+            if ($this->put('start_date') != null)
+                $new_one['start_date'] = $this->put('start_date');
+            if ($this->put('expiry_date') != null)
+                $new_one['expiry_date'] = $this->put('expiry_date');
+            if ($this->put('path') != null)
+                $new_one['path'] = $this->put('path');
+            if ($this->put('permission') != null)
+                $new_one['permission'] = $this->put('permission');
+            if ($this->put('disabled') != null)
+                $new_one['disabled'] = $this->put('disabled');
+
+            $qb_token = $this->update_qb_token($users[0]->id);
+
+            $qb_result = $this->qb->updateUser( $qb_token, $users[0]->qb_id, $user);
+            
+            if (isset($qb_result->message))
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => $qb_result->message,
+                    'code' => 501
+                ], REST_Controller::HTTP_OK);
+            }
+
+            if ($this->user->update($new_one) == true)
+            {
+                $this->response([
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => ''
+                ], REST_Controller::HTTP_OK);        
+            }
+            else
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => 'No id('.$new_one['user_id'].') or No new field value to update'
+                ], REST_Controller::HTTP_BAD_REQUEST);        
+            }
+        }
+        else
+        {
+            $this->response([
+                'status' => 'fail', // "success", "fail", "not available", 
+                'message' => $v->errors()
+            ], REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+
+
+    /**
+     * @api {get} /user/delete -(admin) Delete
+     * @apiVersion 0.1.0
+     * @apiName Delete
+     * @apiGroup User
+     *
+     * @apiParam {String} id               <code>mandatory</code> id of the User.
+     *
+     * @apiUse Authentication
+     *
+     * @apiUse SignupResponse
+     */
+    
+    public function delete_get() 
+    {
+        if ($this->check_auth() == false)
+            return;
+
+        $v = $this->new_validator($this->get());
+        $v->rule('required', ['id']);
+        $v->rule('integer', ['id']);
+
+        if ($v->validate())
+        {
+
+            $users = $this->user->get($this->get('id'));
+            $qb_token = $this->update_qb_token($users[0]->id);
+            $qb_result = $this->qb->deleteUser( $qb_token, $users[0]->qb_id);
+            
+            if ($this->user->delete($this->get('id')) == true)
+            {
+                $this->response([
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => ''
+                ], REST_Controller::HTTP_OK);        
+            }
+            else
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => 'No id('.$new_one['user_id'].')'
+                ], REST_Controller::HTTP_BAD_REQUEST);        
+            } 
+        }
+        else
+        {
+            $this->response([
+                'status' => 'fail', // "success", "fail", "not available", 
+                'message' => $v->errors(),
+                'data' => null
+            ], REST_Controller::HTTP_BAD_REQUEST);  
+        }
+    }
 }
+

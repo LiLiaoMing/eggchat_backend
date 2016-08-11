@@ -24,6 +24,8 @@ class Service_Controller extends REST_Controller {
         parent::__construct();
         $this->load->model('token_model', 'token');
         $this->load->model('user_model', 'user');
+
+        date_default_timezone_set("UTC");
     }
 
     /*
@@ -157,7 +159,6 @@ class Service_Controller extends REST_Controller {
         }
         else
         {
-
             $result = $this->qb->signinUser( $user->username );
             if (isset($result->errors))
                 return null;

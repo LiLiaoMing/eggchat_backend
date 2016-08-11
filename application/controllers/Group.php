@@ -29,6 +29,9 @@ class Group extends Service_Controller {
      *
      * @apiParam {String} name           <code>mandatory</code> Group name
      * @apiParam {String} occupants_ids  <code>optional</code> Group occupants_ids (Ex: 55,558,12345)
+     * @apiParam {Number} owner_id       <code>optional</code> This is for website. (owner_id)
+     * @apiParam {String} email          <code>optional</code> Group email
+     * @apiParam {String} public         <code>optional</code> Group public status (default : 1 , private: 0)
      *
      * @apiUse Authentication
      *
@@ -41,10 +44,26 @@ class Group extends Service_Controller {
 
         $v = $this->new_validator($this->post());
         $v->rule('required', ['name']);
+        $v->rule('email', ['email']);
+        $v->rule('numeric', ['public', 'owner_id']);
         
         if ($v->validate())
         {
-            $qb_result = $this->qb->createGroup($this->current_user['qb_token'], 2, $this->post('name'), $this->post('occupants_ids'));
+            $qb_token = null;
+            $owner_id = null;
+
+            if ($this->post('owner_id'))
+            {
+                $qb_token = $this->update_qb_token($this->post('owner_id'));
+                $owner_id = $this->post('owner_id');
+            }
+            else
+            {
+                $qb_token = $this->current_user['qb_token'];
+                $owner_id = $this->current_user['uid'];
+            }
+
+            $qb_result = $this->qb->createGroup($qb_token, 2, $this->post('name'), $this->post('occupants_ids'));
 
             if (isset($qb_result->errors))
             {
@@ -55,8 +74,10 @@ class Group extends Service_Controller {
 
             $new_one = array (
                 'qb_id' => $qb_result->_id,
-                'owner_id' => $this->current_user['uid'],
-                'name' => $this->post('name')
+                'owner_id' => $owner_id,
+                'name' => $this->post('name'),
+                'email' => $this->post('email'),
+                'public' => $this->post('public'),
             );
             $new_user_id = $this->group->insert($new_one);
                 
@@ -123,9 +144,11 @@ class Group extends Service_Controller {
      * @apiName UpdateGroup
      * @apiGroup Group
      *
-     * @apiParam {String} group_id       <code>mandatory</code> Group ID
-     * @apiParam {String} name           <code>mandatory</code> Group name
+     * @apiParam {String} group_qbid     <code>mandatory</code> Group ID
+     * @apiParam {String} name           <code>optional</code> Group name
      * @apiParam {String} occupants_ids  <code>optional</code> Group occupants_ids (Ex: 55,558,12345)
+     * @apiParam {String} email          <code>optional</code> Group email
+     * @apiParam {String} public         <code>optional</code> Group public status (default : 1 , private: 0)
      *
      * @apiUse Authentication
      *
@@ -137,11 +160,13 @@ class Group extends Service_Controller {
             return;
 
         $v = $this->new_validator($this->put());
-        $v->rule('required', ['group_id']);
+        $v->rule('required', ['group_qbid']);
+        $v->rule('email', ['email']);
+        $v->rule('numeric', ['public', 'owner_id']);
 
         if ($v->validate())
         {
-            if ( count($this->group->get($this->put('group_id'))) == 0)
+            if ( count($this->group->get($this->put('group_qbid'))) == 0)
             {
                 $this->response([
                     'status' => 'fail', // "success", "fail", "not available", 
@@ -150,21 +175,23 @@ class Group extends Service_Controller {
                 ], REST_Controller::HTTP_OK);
             }
 
-            $group = $this->group->get($this->put('group_id'))[0];
-            if ($this->put('name'))
-            {   
-                if ($group->owner_id != $this->current_user['uid'])
-                {
-                    $this->response([
-                        'status' => 'fail', // "success", "fail", "not available", 
-                        'message' => 'You are not the owner of this group, cannot change name.'
-                    ], REST_Controller::HTTP_OK);
-                }
-            }
+
+
+            $group = $this->group->get($this->put('group_qbid'))[0];
+            // if ($this->put('name'))
+            // {   
+            //     if ($group->owner_id != $this->current_user['uid'])
+            //     {
+            //         $this->response([
+            //             'status' => 'fail', // "success", "fail", "not available", 
+            //             'message' => 'You are not the owner of this group, cannot change name.'
+            //         ], REST_Controller::HTTP_OK);
+            //     }
+            // }
 
             $qb_token = $this->update_qb_token($group->owner_id);
 
-            $qb_result = $this->qb->updateGroup($qb_token, $this->put('group_id'), $this->put('name'), $this->put('occupants_ids'));
+            $qb_result = $this->qb->updateGroup($qb_token, $this->put('group_qbid'), $this->put('name'), $this->put('occupants_ids'));
 
             if (isset($qb_result->errors))
             {
@@ -173,12 +200,33 @@ class Group extends Service_Controller {
                 ], REST_Controller::HTTP_OK);
             }
 
-            $this->response([
-                'status' => 'success', // "success", "fail", "not available", 
-                'message' => '',
-                'code' => 200,
-                'data' => $qb_result
-            ], REST_Controller::HTTP_OK);    
+
+            $new_one = array ('id' => $group->id);
+
+            if ($this->put('name') != null)
+                $new_one['name'] = $this->put('name');
+            if ($this->put('email') != null)
+                $new_one['email'] = $this->put('email');
+            if ($this->put('public') != null)
+                $new_one['public'] = $this->put('public');
+
+            if ($this->group->update($new_one) == true)
+            {
+                $this->response([
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => '',
+                    'code' => 200,
+                    'data' => $qb_result
+                ], REST_Controller::HTTP_OK);    
+            }
+            else
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => 'No id or No new field value to update'
+                ], REST_Controller::HTTP_BAD_REQUEST);        
+            }
+            
         }
         else
         {

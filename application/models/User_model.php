@@ -41,7 +41,7 @@ class User_model extends CI_Model {
                   $mobile = null,
                   $start_date = null,
                   $expiry_date = null,
-                  $type = null,
+                  $level = null,
                   $path = null,
 
                   $limit = null,
@@ -66,8 +66,8 @@ class User_model extends CI_Model {
             $this->db->where('start_date', $start_date);
         if ($expiry_date)
             $this->db->where('expiry_date', $expiry_date);
-        if ($type)
-            $this->db->where('type', $type);
+        if ($level)
+            $this->db->where('level', $level);
         if ($path)
             $this->db->like('path', $path);
 
@@ -79,6 +79,47 @@ class User_model extends CI_Model {
         
         $query = $this->db->get();
         return $query->result();
+    }
+
+    function get_count( $id = null,
+        
+                  $username = null,
+                  $password = null,
+                  $full_name = null,
+                  $email = null,
+                  $mobile = null,
+                  $start_date = null,
+                  $expiry_date = null,
+                  $level = null,
+                  $path = null)
+    {
+        $this->db->select('*');
+        $this->db->from($this->table);
+
+        if ($id)
+            $this->db->where('id', $id);
+        if ($username)
+            $this->db->where('username', $username);
+        if ($password)
+            $this->db->where('password', $password);
+        if ($full_name)
+            $this->db->like('full_name', $full_name);
+        if ($email)
+            $this->db->where('email', $email);
+        if ($mobile)
+            $this->db->where('mobile', $mobile);
+        if ($start_date)
+            $this->db->where('start_date', $start_date);
+        if ($expiry_date)
+            $this->db->where('expiry_date', $expiry_date);
+        if ($level)
+            $this->db->where('level', $level);
+        if ($path)
+            $this->db->like('path', $path);
+
+
+        $query = $this->db->get();
+        return $query->num_rows();
     }
 
     function get_by_device_token( $device_token = null)

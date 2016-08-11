@@ -108,42 +108,71 @@ class QBhelper {
 	 *      Update User
 	 *
 	 *--------------------------------------------------------------------------------------------------------*/
-	// public function updateUser($qb_token, $qb_id, $external_user_id = null) {
+	public function updateUser($qb_token, $qb_id, $user) {
 
-	// 	$user = array();
-	// 	if ($external_user_id)
-	// 		$user['external_user_id'] = $external_user_id;
+		$request = json_encode(array(
+			'user' => $user
+		));
 
-	// 	$request = json_encode(array(
-	// 		'user' => $user
-	// 	));
-
-	// 	$ch = curl_init();
-	// 	curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/users/' . $qb_id.'.json'); // Full path is - https://api.quickblox.com/auth.json
-	// 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-	// 	curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
-	// 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	// 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	// 	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-	// 	  'Content-Type: application/json',
-	// 	  'QuickBlox-REST-API-Version: 0.1.0',
-	// 	  'QB-Token: ' . $qb_token
-	// 	));
-	// 	$response = curl_exec($ch);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/users/' . $qb_id.'.json'); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		  'Content-Type: application/json',
+		  'QuickBlox-REST-API-Version: 0.1.0',
+		  'QB-Token: ' . $qb_token
+		));
+		$response = curl_exec($ch);
 		
-	// 	$result = null;
+		$result = null;
 		
-	// 	ob_start();
-	// 	try {
-	// 		$result = json_decode($response);
-	// 	}
-	// 	catch (Exception $e) {
-	// 		$result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	// 	}
-	// 	curl_close($ch);
-	// 	ob_end_clean();
-	// 	return $result;
-	// }
+		ob_start();
+		try {
+			$result = json_decode($response);
+		}
+		catch (Exception $e) {
+			$result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		}
+		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
+
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Delete User
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+	public function deleteUser($qb_token, $qb_id) {
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/users/' . $qb_id.'.json'); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		  'Content-Type: application/json',
+		  'QuickBlox-REST-API-Version: 0.1.0',
+		  'QB-Token: ' . $qb_token
+		));
+		$response = curl_exec($ch);
+		
+		$result = null;
+		
+		ob_start();
+		try {
+			$result = json_decode($response);
+		}
+		catch (Exception $e) {
+			$result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		}
+		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
 
 
 	/*--------------------------------------------------------------------------------------------------------
