@@ -47,6 +47,7 @@ class User extends Service_Controller {
      * @apiParam {Date} expiry_date        <code>optional</code>  Expiry date
      * @apiParam {Date} path               <code>optional</code>  Parent tree path
      * @apiParam {Date} permission         <code>optional</code>  Permission
+     * @apiParam {Number} disabled         <code>optional</code>  Disable status
      *
      * @apiUse SignupResponse
      */
@@ -54,7 +55,7 @@ class User extends Service_Controller {
     {
         $v = $this->new_validator($this->post());
         $v->rule('required', ['username', 'email', 'password', 'level']);
-        $v->rule('integer', ['level', 'max_per_group', 'max_circulate', 'max_member', 'max_group']);
+        $v->rule('integer', ['level', 'max_per_group', 'max_circulate', 'max_member', 'max_group', 'disabled']);
         $v->rule('numeric', ['mobile']);
         $v->rule('email', ['email']);
         $v->rule('url', ['avatar']);
@@ -65,7 +66,6 @@ class User extends Service_Controller {
             /*******************************************************************************************
              * Insert new record to table(users) 
              *******************************************************************************************/
-
             if ( count($this->user->get(null, $this->post('username'))) > 0)
             {
                 $this->response([
@@ -93,6 +93,7 @@ class User extends Service_Controller {
                 ], REST_Controller::HTTP_OK);
             }
 
+            
             $new_one = array (
                 'qb_id' => null,
                 'username' => $this->post('username'),
@@ -114,7 +115,8 @@ class User extends Service_Controller {
                 'expiry_date' => $this->post('expiry_date'),
                 'level' => $this->post('level'),
                 'path' => $this->post('path'),
-                'permission' => $this->post('permission')            
+                'permission' => $this->post('permission'),
+                'disabled' => $this->post('disabled')
             );
             $new_user_id = $this->user->insert($new_one);
 
@@ -187,7 +189,7 @@ class User extends Service_Controller {
         {
 
             $users = $this->user->get(null, $this->head('username'), $this->head('password'));
-            if (count($users) == 0 )
+            if ((count($users) == 0) || ($users[0]->disabled == "0") )
             {
                 $this->response([
                     'status' => 'fail', // "success", "fail", "not available", 
