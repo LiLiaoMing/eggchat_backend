@@ -212,7 +212,7 @@ class User extends Service_Controller {
         {
 
             $users = $this->user->get(null, $this->head('username'), $this->head('password'));
-            if ((count($users) == 0) || ($users[0]->disabled == "0") )
+            if ((count($users) == 0) || ($users[0]->disabled == "1") )
             {
                 $this->response([
                     'status' => 'fail', // "success", "fail", "not available", 
