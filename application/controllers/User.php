@@ -119,8 +119,9 @@ class User extends Service_Controller {
                 'disabled' => $this->post('disabled')
             );
             $new_user_id = $this->user->insert($new_one);
+            $new_one['id'] = $new_user_id;
 
-
+         
             $qb_result = $this->qb->signupUser( $this->post('full_name'), 
                                    $this->post('username'),
                                    $this->post('email'), 
@@ -138,17 +139,39 @@ class User extends Service_Controller {
                 ], REST_Controller::HTTP_OK);
             }
 
-            $update_one = array ('id' => $new_user_id, 'qb_id'=> $qb_result->user->id);
+            $update_one = array ('id' => $new_one['id'], 'qb_id'=> $qb_result->user->id);
             $this->user->update($update_one);
-            $new_one['qb_id'] = $update_one['qb_id'];
+            
 
-            unset($new_one['password']);
+            $result = $this->qb->signinUser($new_one['username']);
+            if (isset($result->errors))
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => $result,
+                    'code' => 501
+                ], REST_Controller::HTTP_OK);
+            }
+            
+            $qb_token = $result->session->token;
+
+            $new_token = array (
+                'uid' => $new_one['id'],
+                'token' => md5(time()),
+                'qb_token' => $qb_token,
+                'updated_at' => date("Y-m-d H:i:s")
+            );
+            $this->token->insert($new_token);    
+            
+
+            unset($new_one->password);
             $this->response([
-                'status' => 'success', // "success", "fail", "not available", 
-                'message' => '',
-                'code' => 200,
-                'data' => $new_one
-            ], REST_Controller::HTTP_OK);    
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => '',
+                    'code' => 200,
+                    'data' => array('user' => $new_one, 'token' => $new_token['token'], 'qb_token' => $new_token['qb_token'])
+                ], REST_Controller::HTTP_OK); 
+
         }
         else
         {
