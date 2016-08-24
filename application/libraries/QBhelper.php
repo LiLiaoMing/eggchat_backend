@@ -61,7 +61,7 @@ class QBhelper {
 	 *      Signup
 	 *
 	 *--------------------------------------------------------------------------------------------------------*/
-	public function signupUser($fullname, $username, $email, $phone, $avatar, $external_user_id) {
+	public function signupUser($fullname, $username, $email, $phone, $avatar, $path, $external_user_id) {
 		$token = $this->generateSession();
 
 		$request = json_encode(array(
@@ -72,6 +72,7 @@ class QBhelper {
 		  		'password' => QB_DEFAULT_PASSWORD,
 		  		'phone' => $phone,
 		  		'website' => $avatar,
+		  		'custom_data' => $path,
 		  		'external_user_id' => $external_user_id
 		  	)
 		));
@@ -332,19 +333,18 @@ class QBhelper {
 	 *      Get group
 	 *
 	 *--------------------------------------------------------------------------------------------------------*/
-	public function getGroup($type, $name, $ids) {
-		$this->generateSession();
+	public function getGroup($qb_token, $group_id) {
 
 		$ch = curl_init();
 
-		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_DIALOG); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_DIALOG . '?_id=' . $group_id); // Full path is - https://api.quickblox.com/auth.json
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 		  'Content-Type: application/json',
 		  'QuickBlox-REST-API-Version: 0.1.0',
-		  'QB-Token: ' . $this->qb_token
+		  'QB-Token: ' . $qb_token
 		));
 		$response = curl_exec($ch);
 		
@@ -363,6 +363,48 @@ class QBhelper {
 		ob_end_clean();
 		return $result;
 	}
+
+	/*--------------------------------------------------------------------------------------------------------
+	 *
+	 *      Signup
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+	public function createCirculate($qb_token, $chat_dialog_id, $recipient_id, $message) {
+
+		$request = json_encode(array(
+			'chat_dialog_id' =>  $chat_dialog_id,
+	 		'message' => $message,
+	  		'recipient_id' => $recipient_id,
+	  		'circulate' => 1
+		));
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_MESSAGE); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		  'Content-Type: application/json',
+		  'QuickBlox-REST-API-Version: 0.1.0',
+		  'QB-Token: ' . $qb_token
+		));
+		$response = curl_exec($ch);
+		
+		$result = null;
+		
+		ob_start();
+		try {
+			$result = json_decode($response);
+		}
+		catch (Exception $e) {
+			$result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		}
+		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
+
 
 	/*--------------------------------------------------------------------------------------------------------
 	 *
@@ -492,7 +534,27 @@ class QBhelper {
 		return $undelivered;
 	}
 
+	public function sendViaMailgun($from, $to, $subject, $html) {
 
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	    curl_setopt($ch, CURLOPT_USERPWD, 'api:key-7e055f5229a3cc5f47cdb456549baa9d');
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+	    curl_setopt($ch, CURLOPT_URL, 
+	          'https://api.mailgun.net/v3/email.eggchat.net/messages');
+	    curl_setopt($ch, CURLOPT_POSTFIELDS, 
+	            array('from' => $from,
+	                  'to' => $to,
+	                  'subject' => $subject,
+	                  'text' => $html));
+	    $result = curl_exec($ch);
+
+	    $result = curl_error($ch);
+		curl_close($ch);
+		return $result;
+	}
 	
 }
 ?>

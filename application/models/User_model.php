@@ -176,5 +176,15 @@ class User_model extends CI_Model {
             $devicetokens[0]->player_id;
     }
 
+    function get_by_qbid( $qb_id)
+    {
+        $this->db->select('*');
+        $this->db->from($this->table);
+
+        $this->db->where('qb_id', $qb_id);
+        
+        $query = $this->db->get();
+        return $query->result();
+    }
     
 }

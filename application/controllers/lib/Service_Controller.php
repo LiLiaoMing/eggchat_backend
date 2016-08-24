@@ -2,6 +2,7 @@
 
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH . './libraries/REST_Controller.php';
 require APPPATH . './libraries/Constants.php';
@@ -9,6 +10,8 @@ require APPPATH . './libraries/QBhelper.php';
 require 'Validator.php';
 require 'Authentication.php';
 require 'apidoc_define.php';
+
+
 
 class Service_Controller extends REST_Controller {
 
@@ -18,7 +21,7 @@ class Service_Controller extends REST_Controller {
     function __construct()
     {
         $this->qb = new QBhelper();
-        $this->current_user = array('uid' => null, 'username' => null, 'qb_token' => null);
+        $this->current_user = array('uid' => null, 'username' => null, 'qb_id' => null, 'qb_token' => null);
 
         // Construct the parent class
         parent::__construct();
@@ -110,6 +113,7 @@ class Service_Controller extends REST_Controller {
             {
                 $this->current_user['uid'] = $tokens[0]->uid;
                 $this->current_user['username'] = $this->user->get($tokens[0]->uid)[0]->username;
+                $this->current_user['qb_id'] = $this->user->get($tokens[0]->uid)[0]->qb_id;
                 $this->current_user['qb_token'] = $this->update_qb_token($this->current_user['uid']);
 
                 return true;

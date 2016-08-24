@@ -72,4 +72,27 @@ class Group_model extends CI_Model {
         $query = $this->db->get();
         return $query->result();
     }
+
+    function search_count ( $uid)  
+    {
+        $this->db->select('*');
+        $this->db->from('users');
+        $this->db->where('id', $uid);       
+        $current_user = $this->db->get()->result()[0];
+
+        
+        $this->db->select('groups.*');
+        $this->db->from('groups');
+        $this->db->join('users', 'groups.owner_id = users.id', 'left');
+
+        $this->db->where('groups.owner_id', $uid);
+        $this->db->or_like('users.path', '.'.$uid.'.');
+        if ($current_user->level == 4)
+            $this->db->or_where('users.path', $current_user->path);
+        if ($current_user->level == 5)
+            $this->db->or_where('users.level', 5);
+
+        $query = $this->db->get();
+        return $query->num_rows();
+    }
 }

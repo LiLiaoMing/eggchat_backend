@@ -127,6 +127,7 @@ class User extends Service_Controller {
                                    $this->post('email'), 
                                    $this->post('mobile'), 
                                    $this->post('avatar'),
+                                   $this->post('path'),
                                    $new_user_id);
             
             if (isset($qb_result->errors))
@@ -306,7 +307,7 @@ class User extends Service_Controller {
             return;
 
         $v = $this->new_validator($this->get());
-        $v->rule('integer', ['id', 'level']);
+        $v->rule('integer', ['id', 'level', 'offset', 'amount']);
         $v->rule('email', ['email']);
         $v->rule('numeric', ['mobile']);
 
@@ -488,7 +489,7 @@ class User extends Service_Controller {
             {
                 $this->response([
                     'status' => 'fail', // "success", "fail", "not available", 
-                    'message' => 'No id('.$new_one['user_id'].') or No new field value to update'
+                    'message' => 'No id('.$new_one['id'].') or No new field value to update'
                 ], REST_Controller::HTTP_BAD_REQUEST);        
             }
         }
@@ -555,5 +556,8 @@ class User extends Service_Controller {
             ], REST_Controller::HTTP_BAD_REQUEST);  
         }
     }
+
+
+    
 }
 
