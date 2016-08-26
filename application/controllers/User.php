@@ -206,7 +206,7 @@ class User extends Service_Controller {
     
     public function login_get() 
     {
-        print_r($this->head());
+        $v = $this->new_validator($this->head());
         $v->rule('required', ['Username', 'Password']);
 
         if ($v->validate())
