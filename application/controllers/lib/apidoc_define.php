@@ -2,7 +2,7 @@
 
 /**
  * @apiDefine Authentication
- * @apiHeader {String} token <code>mandatory</code> Authentication token for user
+ * @apiHeader {String} Token <code>mandatory</code> Authentication token for user
  */
 
 

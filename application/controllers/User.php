@@ -198,21 +198,22 @@ class User extends Service_Controller {
      * @apiName Login
      * @apiGroup User
      *
-     * @apiHeader {String} username         <code>mandatory</code> username of the User.
-     * @apiHeader {String} password         <code>mandatory</code> Password of the User.
+     * @apiHeader {String} Username         <code>mandatory</code> username of the User.
+     * @apiHeader {String} Password         <code>mandatory</code> Password of the User.
      *
      * @apiUse LoginResponse
      */
     
     public function login_get() 
     {
+        print_r($this->head());
         $v = $this->new_validator($this->head());
-        $v->rule('required', ['username', 'password']);
+        $v->rule('required', ['Username', 'Password']);
 
         if ($v->validate())
         {
 
-            $users = $this->user->get(null, $this->head('username'), $this->head('password'));
+            $users = $this->user->get(null, $this->head('Username'), $this->head('Password'));
             if ((count($users) == 0) || ($users[0]->disabled == "1") )
             {
                 $this->response([
@@ -222,7 +223,7 @@ class User extends Service_Controller {
                 ], REST_Controller::HTTP_OK);
             }
 
-            $result = $this->qb->signinUser($this->head('username'));
+            $result = $this->qb->signinUser($this->head('Username'));
             if (isset($result->errors))
             {
                 $this->response([

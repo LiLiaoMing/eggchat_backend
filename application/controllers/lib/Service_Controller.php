@@ -98,7 +98,7 @@ class Service_Controller extends REST_Controller {
     protected function check_auth() 
     {
         $v = $this->new_validator($this->head());
-        $v->rule('required', ['token']);
+        $v->rule('required', ['Token']);
 
         if($v->validate())
         {
@@ -108,7 +108,7 @@ class Service_Controller extends REST_Controller {
             //     return true;
             // }
             
-            $tokens = $this->token->get(null, $this->head('token'));
+            $tokens = $this->token->get(null, $this->head('Token'));
             if (count($tokens) > 0)
             {
                 $this->current_user['uid'] = $tokens[0]->uid;
