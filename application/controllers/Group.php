@@ -477,7 +477,7 @@ class Group extends Service_Controller {
             
             $result = $this->qb->sendViaMailgun('workpanda329@hotmail.com',
                 'liliaoming56@outlook.com',
-                'The PHP SDK is awesome!',
+                'I am KGS',
                 'It is so simple to send a message.');
 
             $this->response([
