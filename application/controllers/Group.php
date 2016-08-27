@@ -11,6 +11,7 @@ class Group extends Service_Controller {
         parent::__construct();
 
         $this->load->model('group_model', 'group');
+        $this->load->model('user_model', 'user');
     }
     
     /**
@@ -474,11 +475,13 @@ class Group extends Service_Controller {
 
         if ($v->validate())
         {
+
+            $buf_user = $this->user->get_by_qbid($this->get('circulater_id'))[0];
             
-            $result = $this->qb->sendViaMailgun('workpanda329@hotmail.com',
-                'liliaoming56@outlook.com',
-                'I am KGS',
-                'It is so simple to send a message.');
+            $result = $this->qb->sendViaMailgun($this->current_user['email'],
+                $buf_user->email,
+                'Circulate Reply',
+                $this->get('message'));
 
             $this->response([
                     'status' => 'success', // "success", "fail", "not available", 

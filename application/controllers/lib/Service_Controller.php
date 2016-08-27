@@ -21,7 +21,7 @@ class Service_Controller extends REST_Controller {
     function __construct()
     {
         $this->qb = new QBhelper();
-        $this->current_user = array('uid' => null, 'username' => null, 'qb_id' => null, 'qb_token' => null);
+        $this->current_user = array('uid' => null, 'username' => null, 'qb_id' => null, 'email' => null, 'qb_token' => null);
 
         // Construct the parent class
         parent::__construct();
@@ -112,8 +112,10 @@ class Service_Controller extends REST_Controller {
             if (count($tokens) > 0)
             {
                 $this->current_user['uid'] = $tokens[0]->uid;
-                $this->current_user['username'] = $this->user->get($tokens[0]->uid)[0]->username;
-                $this->current_user['qb_id'] = $this->user->get($tokens[0]->uid)[0]->qb_id;
+                $buf_user = $this->user->get($tokens[0]->uid)[0];
+                $this->current_user['username'] = $buf_user->username;
+                $this->current_user['qb_id'] = $buf_user->qb_id;
+                $this->current_user['email'] = $buf_user->email;
                 $this->current_user['qb_token'] = $this->update_qb_token($this->current_user['uid']);
 
                 return true;
