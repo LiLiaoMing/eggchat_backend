@@ -276,7 +276,7 @@ class Group extends Service_Controller {
      * @apiName GroupUsers
      * @apiGroup Group
      *
-     * @apiParam {Number} id               <code>mandatory</code> Group ID.
+     * @apiParam {Number} qb_id            <code>mandatory</code> Group QB ID.
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
      *
@@ -291,19 +291,20 @@ class Group extends Service_Controller {
             return;
 
         $v = $this->new_validator($this->get());
-        $v->rule('required', ['id']);
+        $v->rule('required', ['qb_id']);
         $v->rule('integer', ['offset', 'amount']);
 
         if ($v->validate())
         {
             
-            $group = $this->group->get($this->get('id'))[0];
+            $group = $this->group->get($this->get('qb_id'))[0];
             $qb_token = $this->update_qb_token($group->owner_id);
 
-            $occupants_ids = $this->qb->getGroup($qb_token, $this->get('id'))->items[0]->occupants_ids;
+            $occupants_ids = $this->qb->getGroup($qb_token, $this->get('qb_id'))->items[0]->occupants_ids;
 
             $offset = 0;
-            $amount = count($occupants_ids);
+            $total_amount = count($occupants_ids);
+            $amount = $total_amount;
             if ($this->get('offset') != null)
                 $offset = $this->get('offset');
             if ($this->get('amount') != null)
@@ -321,9 +322,11 @@ class Group extends Service_Controller {
             $this->response([
                     'status' => 'success', // "success", "fail", "not available", 
                     'message' => '',
-                    'data' => $users
+                    'data' => [
+                        'result'=>$users,
+                        'count'=>$total_amount
+                        ]
                 ], REST_Controller::HTTP_OK);
-
         }
         else
         {

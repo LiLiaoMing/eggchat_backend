@@ -76,7 +76,7 @@ class QBhelper {
 		  		'external_user_id' => $external_user_id
 		  	)
 		));
-
+		
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_USER); // Full path is - https://api.quickblox.com/auth.json
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
