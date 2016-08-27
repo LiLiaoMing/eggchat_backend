@@ -469,9 +469,6 @@ class Group extends Service_Controller {
         if ($this->check_auth() == false)
             return;
 
-        var_dump($this->get());
-        return;
-        
         $v = $this->new_validator($this->get());
         $v->rule('required', ['circulater_id', 'message']);
 
