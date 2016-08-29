@@ -127,7 +127,11 @@ class User extends Service_Controller {
                                    $this->post('email'), 
                                    $this->post('mobile'), 
                                    $this->post('avatar'),
-                                   $this->post('path'),
+                                   json_encode(
+                                        array ('path'=> $this->post('path'),
+                                            'level' =>$this->post('level'), 
+                                            'disabled' =>$this->post('disabled'))
+                                        ),
                                    $new_user_id);
             
             if (isset($qb_result->errors))
