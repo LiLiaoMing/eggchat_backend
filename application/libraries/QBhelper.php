@@ -375,7 +375,8 @@ class QBhelper {
 			'chat_dialog_id' =>  $chat_dialog_id,
 	 		'message' => $message,
 	  		'recipient_id' => $recipient_id,
-	  		'circulate' => 1
+	  		'send_to_chat' => 1,
+	  		'circulate' => 1,
 		));
 
 		$ch = curl_init();
