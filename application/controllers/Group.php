@@ -75,7 +75,7 @@ class Group extends Service_Controller {
             $new_one = array (
                 'qb_id' => $qb_result->_id,
                 'owner_id' => $owner_id,
-                'occupants_ids' => $qb_result->occupants_ids,
+                'occupants_ids' => json_encode($qb_result->occupants_ids),
                 'name' => $this->post('name'),
                 'email' => $this->post('email'),
                 'public' => $this->post('public'),
