@@ -75,6 +75,7 @@ class Group extends Service_Controller {
             $new_one = array (
                 'qb_id' => $qb_result->_id,
                 'owner_id' => $owner_id,
+                'occupants_ids' => $qb_result->occupants_ids,
                 'name' => $this->post('name'),
                 'email' => $this->post('email'),
                 'public' => $this->post('public'),
@@ -218,42 +219,48 @@ class Group extends Service_Controller {
             // }
 
             $qb_token = $this->update_qb_token($group->owner_id);
+            // $this->response([
+            //     'data' => $qb_token
+            // ], REST_Controller::HTTP_OK);
+
 
             $qb_result = $this->qb->updateGroup($qb_token, $this->put('group_qbid'), $this->put('name'), $this->put('occupants_ids'));
 
             if (isset($qb_result->errors))
             {
                 $this->response([
-                    'data' => $qb_result
-                ], REST_Controller::HTTP_OK);
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => '',
+                    'code' => 200,
+                    // 'data' => $qb_result
+                ], REST_Controller::HTTP_OK);    
             }
 
-
             $new_one = array ('id' => $group->id);
-
             if ($this->put('name') != null)
                 $new_one['name'] = $this->put('name');
             if ($this->put('email') != null)
                 $new_one['email'] = $this->put('email');
             if ($this->put('public') != null)
                 $new_one['public'] = $this->put('public');
+            $new_one['occupants_ids'] = json_encode($qb_result->occupants_ids);
 
-            // if ($this->group->update($new_one) == true)
-            // {
+            if ($this->group->update($new_one) == true)
+            {
                 $this->response([
                     'status' => 'success', // "success", "fail", "not available", 
                     'message' => '',
                     'code' => 200,
-                    'data' => $qb_result
+                    // 'data' => $qb_result
                 ], REST_Controller::HTTP_OK);    
-            // }
-            // else
-            // {
-            //     $this->response([
-            //         'status' => 'fail', // "success", "fail", "not available", 
-            //         'message' => 'No id or No new field value to update'
-            //     ], REST_Controller::HTTP_BAD_REQUEST);        
-            // }
+            }
+            else
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => 'No id or No new field value to update'
+                ], REST_Controller::HTTP_BAD_REQUEST);        
+            }
             
         }
         else

@@ -139,11 +139,12 @@ class Service_Controller extends REST_Controller {
 
         if (count($tokens) > 0)
         {
-            $diff_sec = abs(strtotime($tokens[0]->updated_at) - strtotime(date('Y-m-d H:i:s')));
-            $diff_hour = floor($diff_sec/(60 * 60));
-            if ($diff_hour > 1)
-            {
+            // $diff_sec = abs(strtotime($tokens[0]->updated_at) - strtotime(date('Y-m-d H:i:s')));
+            // $diff_hour = round($diff_sec/(60 * 60), 2);
+            // if ($diff_hour > 1)
+            // {
                 $result = $this->qb->signinUser( $user->username );
+
                 if (isset($result->errors))
                     return null;
                 
@@ -155,13 +156,14 @@ class Service_Controller extends REST_Controller {
                     'updated_at' => date("Y-m-d H:i:s")
                 );
                 $this->token->update($new_one);
-            }
-            else
-            {
-                $qb_token = $tokens[0]->qb_token;
-                $new_one = array( 'id' => $tokens[0]->id, 'updated_at' => date('Y-m-d H:i:s'));
-                $this->token->update($new_one);
-            }
+            // }
+            // else
+            // {
+            //     $qb_token = $tokens[0]->qb_token;
+            //     return 'dsjfkdjfd';
+            //     // $new_one = array( 'id' => $tokens[0]->id, 'updated_at' => date('Y-m-d H:i:s'));
+            //     // $this->token->update($new_one);
+            // }
         }
         else
         {
