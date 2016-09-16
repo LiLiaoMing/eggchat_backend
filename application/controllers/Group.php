@@ -274,6 +274,101 @@ class Group extends Service_Controller {
 
 
     /**
+     * @api {put} /group/omit Remove Member From Group
+     * @apiVersion 0.1.0
+     * @apiName OmitGroupMember
+     * @apiGroup Group
+     *
+     * @apiParam {String} group_qbid     <code>mandatory</code> Group ID
+     * @apiParam {String} occupants_ids  <code>optional</code> Group occupants_ids (Ex: 55,558,12345)
+     *
+     * @apiUse Authentication
+     *
+     * @apiUse UpdateGroupResponse
+     */
+    public function omit_put()
+    {
+        if ($this->check_auth() == false)
+            return;
+
+        $v = $this->new_validator($this->put());
+        $v->rule('required', ['group_qbid']);
+
+        if ($v->validate())
+        {
+            if ( count($this->group->get($this->put('group_qbid'))) == 0)
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => 'Invalid group id',
+                    'code' => 501
+                ], REST_Controller::HTTP_OK);
+            }
+
+
+
+            $group = $this->group->get($this->put('group_qbid'))[0];
+            // if ($this->put('name'))
+            // {   
+            //     if ($group->owner_id != $this->current_user['uid'])
+            //     {
+            //         $this->response([
+            //             'status' => 'fail', // "success", "fail", "not available", 
+            //             'message' => 'You are not the owner of this group, cannot change name.'
+            //         ], REST_Controller::HTTP_OK);
+            //     }
+            // }
+
+            $qb_token = $this->update_qb_token($group->owner_id);
+            // $this->response([
+            //     'data' => $qb_token
+            // ], REST_Controller::HTTP_OK);
+
+
+            $qb_result = $this->qb->removeGroupMember($qb_token, $this->put('group_qbid'), $this->put('occupants_ids'));
+
+            if (isset($qb_result->errors))
+            {
+                $this->response([
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => '',
+                    'code' => 200,
+                    // 'data' => $qb_result
+                ], REST_Controller::HTTP_OK);    
+            }
+
+            $new_one = array ('id' => $group->id);
+            $new_one['occupants_ids'] = json_encode($qb_result->occupants_ids);
+
+            if ($this->group->update($new_one) == true)
+            {
+                $this->response([
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => '',
+                    'code' => 200,
+                    // 'data' => $qb_result
+                ], REST_Controller::HTTP_OK);    
+            }
+            else
+            {
+                $this->response([
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => 'No id or No new field value to update'
+                ], REST_Controller::HTTP_BAD_REQUEST);        
+            }
+            
+        }
+        else
+        {
+            $this->response([
+                'status' => 'fail', // "success", "fail", "not available", 
+                'message' => $v->errors()
+            ], REST_Controller::HTTP_OK);
+        }
+    }
+
+
+    /**
      * @apiDefine GroupUsers
      * @apiSuccess {Object[]}   users               Result of the API call.
      */

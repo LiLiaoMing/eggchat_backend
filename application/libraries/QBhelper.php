@@ -330,6 +330,60 @@ class QBhelper {
 
 	/*--------------------------------------------------------------------------------------------------------
 	 *
+	 *      Update group (remove group members)
+	 *
+	 *--------------------------------------------------------------------------------------------------------*/
+	public function removeGroupMember($token, $group_id, $ids) {
+
+		$request = null;
+		if (strlen($ids) > 0)	
+		{
+			$request = json_encode(array(
+		  		'pull_all' => array (
+		  			'occupants_ids' => explode(',', $ids)
+		  		)
+			));
+		}
+		else
+		{
+			$request = json_encode(array(
+		 		'name' => $name
+			));	
+		}
+
+		$ch = curl_init();
+
+		curl_setopt($ch, CURLOPT_URL, QB_API_ENDPOINT . '/chat/Dialog/' . $group_id .'.json'); // Full path is - https://api.quickblox.com/auth.json
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+		  'Content-Type: application/json',
+		  'QuickBlox-REST-API-Version: 0.1.0',
+		  'QB-Token: ' . $token
+		));
+		$response = curl_exec($ch);
+		
+		$result = null;
+		
+		ob_start();
+		try {
+			$result = json_decode($response);
+			// $result = $response;
+		}
+		catch (Exception $e) {
+			// $result = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$result = 'error';
+		}
+		curl_close($ch);
+		ob_end_clean();
+		return $result;
+	}
+
+
+	/*--------------------------------------------------------------------------------------------------------
+	 *
 	 *      Get group
 	 *
 	 *--------------------------------------------------------------------------------------------------------*/
