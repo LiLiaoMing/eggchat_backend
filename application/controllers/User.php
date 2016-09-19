@@ -604,7 +604,9 @@ class User extends Service_Controller {
             'message' => '',
             'data' => [
                 'core_members' => $core_members,
-                'core_groups' =>$core_groups
+                'core_groups' =>$core_groups,
+                'client_members' => $client_members,
+                'client_groups' => $client_groups
                 ]
         ], REST_Controller::HTTP_OK);    
     }
