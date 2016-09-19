@@ -11,7 +11,7 @@ class User extends Service_Controller {
         // Construct the parent class
         parent::__construct();
 
-        // $this->load->model('user_model', 'user');
+        $this->load->model('group_model', 'group');
     }
     
     /**
@@ -561,7 +561,53 @@ class User extends Service_Controller {
         }
     }
 
+    /**
+     * @apiDefine StatisticsResponse
+     * @apiSuccess {Integer}     .core_members       Core members
+     * @apiSuccess {Integer}     .core_groups        Core groups
+     * @apiSuccess {Integer}     .client_members     Client members
+     * @apiSuccess {Integer}     .client_groups      Client groups
+     * @apiSuccess {Integer}     .total_members      Total members
+     * @apiSuccess {Integer}     .total_groups       Total groups
+     */
 
+    /**
+     * @api {get} /user/statistics -(admin) Statistics
+     * @apiVersion 0.1.0
+     * @apiName Statistics
+     * @apiGroup User
+     *
+     * @apiUse Authentication
+     *
+     * @apiUse StatisticsResponse
+     */
+    
+    public function statistics_get() 
+    {
+        if ($this->check_auth() == false)
+            return;
+
+        $core_members = $this->user->get_count(null, null, null,
+                                    null, null, null, null, null,
+                                    null);
+        $core_groups = $this->group->get_count(null);
+
+        $client_members = $this->user->get_count(null, null, null,
+                                    null, null, null, null, null,
+                                    2);
+        $client_groups = $this->group->get_count(2);
+
+        
+
+        $this->response([
+            'status' => 'success', // "success", "fail", "not available", 
+            'message' => '',
+            'data' => [
+                'core_members' => $core_members,
+                'core_groups' =>$core_groups
+                ]
+        ], REST_Controller::HTTP_OK);    
+    }
     
 }
 

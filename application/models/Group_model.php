@@ -95,4 +95,18 @@ class Group_model extends CI_Model {
         $query = $this->db->get();
         return $query->num_rows();
     }
+
+    function get_count( $level = null )
+    {
+        $this->db->select('*');
+        $this->db->from($this->table);
+
+        $this->db->join('users', 'users.id = groups.owner_id', 'left');
+        if ($level)
+            $this->db->where('users.level', $level);
+
+
+        $query = $this->db->get();
+        return $query->num_rows();
+    }
 }
