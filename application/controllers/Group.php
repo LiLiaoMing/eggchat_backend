@@ -63,6 +63,17 @@ class Group extends Service_Controller {
                 $owner_id = $this->current_user['uid'];
             }
 
+            $users = $this->user->get($owner_id);
+            $groups = $this->group->search_profile_groups($users[0]->path, $this->post('name'));
+
+            if (count($groups) > 0)
+            {
+                $this->response([
+                    'status' => 'fail',  
+                    'message' => 'Cannot create group with this name. Duplicated!'
+                ], REST_Controller::HTTP_OK);
+            }
+
             $qb_result = $this->qb->createGroup($qb_token, 2, $this->post('name'), $this->post('occupants_ids'));
 
             if (isset($qb_result->errors))

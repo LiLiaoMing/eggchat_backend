@@ -64,6 +64,7 @@ class Group_model extends CI_Model {
             $this->db->or_where('users.path', $current_user->path);
         if ($current_user->level == 5)
             $this->db->or_where('users.level', 5);
+        $this->db->where('groups.public', 1);
 
         if ($limit == null)
             $limit = PHP_INT_MAX;
@@ -91,6 +92,7 @@ class Group_model extends CI_Model {
             $this->db->or_where('users.path', $current_user->path);
         if ($current_user->level == 5)
             $this->db->or_where('users.level', 5);
+        $this->db->where('groups.public', 1);
 
         $query = $this->db->get();
         return $query->num_rows();
@@ -108,5 +110,18 @@ class Group_model extends CI_Model {
 
         $query = $this->db->get();
         return $query->num_rows();
+    }
+
+    function search_profile_groups ( $profile_path, $group_name)  
+    {
+        $this->db->select('groups.*');
+        $this->db->from('groups');
+        $this->db->join('users', 'groups.owner_id = users.id', 'left');
+
+        $this->db->where('groups.name', $group_name);
+        $this->db->where('users.path', $profile_path);
+
+        $query = $this->db->get();
+        return $query->result();
     }
 }
