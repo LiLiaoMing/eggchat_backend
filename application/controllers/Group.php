@@ -124,6 +124,7 @@ class Group extends Service_Controller {
      * @apiName SearchGroup
      * @apiGroup Group
      *
+     * @apiParam {Number} public           <code>optional</code> Public.
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
      *
@@ -137,7 +138,7 @@ class Group extends Service_Controller {
             return;
 
         $v = $this->new_validator($this->get());
-        $v->rule('integer', ['offset', 'amount']);
+        $v->rule('integer', ['public', 'offset', 'amount']);
 
         if ($v->validate())
         {
@@ -148,14 +149,14 @@ class Group extends Service_Controller {
                 'data' => [
                     'result'=>$this->group->search(
                                     $this->current_user['uid'], 
+                                    $this->get['public'], 
                                     $this->get('amount'),
                                     $this->get('offset')
                                     ),
                     
                     'count'=>$this->group->search_count(
                                     $this->current_user['uid'], 
-                                    $this->get('amount'),
-                                    $this->get('offset')
+                                    $this->get['public']
                                     )
                     ]
             ], REST_Controller::HTTP_OK);        
@@ -242,7 +243,7 @@ class Group extends Service_Controller {
                 $this->response([
                     'status' => 'fail', // "success", "fail", "not available", 
                     'message' => $qb_result->errors,
-                    'code' => 200,
+                    'code' => 501,
                     // 'data' => $qb_result
                 ], REST_Controller::HTTP_OK);    
             }

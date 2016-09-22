@@ -46,7 +46,7 @@ class Group_model extends CI_Model {
         return $query->result();
     }
 
-    function search ( $uid, $limit = null, $offset = null)  
+    function search ( $uid, $public, $limit = null, $offset = null)  
     {
         $this->db->select('*');
         $this->db->from('users');
@@ -64,7 +64,8 @@ class Group_model extends CI_Model {
             $this->db->or_where('users.path', $current_user->path);
         if ($current_user->level == 5)
             $this->db->or_where('users.level', 5);
-        $this->db->where('groups.public', 1);
+        if ($public)
+            $this->db->where('groups.public', $public);
 
         if ($limit == null)
             $limit = PHP_INT_MAX;
@@ -74,7 +75,7 @@ class Group_model extends CI_Model {
         return $query->result();
     }
 
-    function search_count ( $uid)  
+    function search_count ( $uid, $public)  
     {
         $this->db->select('*');
         $this->db->from('users');
@@ -92,7 +93,8 @@ class Group_model extends CI_Model {
             $this->db->or_where('users.path', $current_user->path);
         if ($current_user->level == 5)
             $this->db->or_where('users.level', 5);
-        $this->db->where('groups.public', 1);
+        if ($public)
+            $this->db->where('groups.public', $public);
 
         $query = $this->db->get();
         return $query->num_rows();
