@@ -240,8 +240,8 @@ class Group extends Service_Controller {
             if (isset($qb_result->errors))
             {
                 $this->response([
-                    'status' => 'success', // "success", "fail", "not available", 
-                    'message' => '',
+                    'status' => 'fail', // "success", "fail", "not available", 
+                    'message' => $qb_result->errors,
                     'code' => 200,
                     // 'data' => $qb_result
                 ], REST_Controller::HTTP_OK);    
