@@ -335,6 +335,17 @@ class Group extends Service_Controller {
             //     }
             // }
 
+            $users = $this->user->get($group->owner_id);
+            if (strpos($this->put('occupants_ids'), $users[0]->qb_id) !== false)
+            {
+                $this->response([
+                    'status' => 'false', // "success", "fail", "not available", 
+                    'message' => "Group owner can't be removed out of its group.",
+                    'code' => 501,
+                    // 'data' => $qb_result
+                ], REST_Controller::HTTP_OK);    
+            }
+
             $qb_token = $this->update_qb_token($group->owner_id);
             // $this->response([
             //     'data' => $qb_token
