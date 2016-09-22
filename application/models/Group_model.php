@@ -46,7 +46,7 @@ class Group_model extends CI_Model {
         return $query->result();
     }
 
-    function search ( $uid, $public, $limit = null, $offset = null)  
+    function search ( $uid, $public, $sort_field, $sort_method, $limit = null, $offset = null)  
     {
         $this->db->select('*');
         $this->db->from('users');
@@ -66,6 +66,9 @@ class Group_model extends CI_Model {
             $this->db->or_where('users.level', 5);
         if ($public)
             $this->db->where('groups.public', $public);
+
+        if ($sort_field)
+            $this->db->order_by($sort_field, $sort_method);
 
         if ($limit == null)
             $limit = PHP_INT_MAX;

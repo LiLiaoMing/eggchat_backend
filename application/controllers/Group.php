@@ -124,6 +124,8 @@ class Group extends Service_Controller {
      * @apiName SearchGroup
      * @apiGroup Group
      *
+     * @apiParam {String} sort_field       <code>optional</code> Sort field.
+     * @apiParam {String} sort_method      <code>optional</code> Sort method(asc, desc).
      * @apiParam {Number} public           <code>optional</code> Public.
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
@@ -150,6 +152,8 @@ class Group extends Service_Controller {
                     'result'=>$this->group->search(
                                     $this->current_user['uid'], 
                                     $this->get('public'), 
+                                    $this->get('sort_field'), 
+                                    $this->get('sort_method'), 
                                     $this->get('amount'),
                                     $this->get('offset')
                                     ),
@@ -392,6 +396,8 @@ class Group extends Service_Controller {
      * @apiGroup Group
      *
      * @apiParam {Number} qb_id            <code>mandatory</code> Group QB ID.
+     * @apiParam {String} sort_field       <code>optional</code> Sort field.
+     * @apiParam {String} sort_method      <code>optional</code> Sort method(asc, desc).
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
      *
@@ -434,6 +440,24 @@ class Group extends Service_Controller {
                 $users[] = $this->user->get_by_qbid($occupants_ids[$i])[0];
             }
 
+
+            $GLOBALS['sort_field'] = $this->get('sort_field');
+            $GLOBALS['sort_method'] = $this->get('sort_method');                
+
+            function cmp($a, $b) //use ($sort_field, $sort_method)
+            {
+
+                $property_name = $GLOBALS['sort_field'];
+                if ( $GLOBALS['sort_method'] == 'asc')
+                    return strcmp($a->{$property_name}, $b->{$property_name});
+                else
+                    return !strcmp($a->{$property_name}, $b->{$property_name});
+
+            }
+            
+            usort($users, "cmp");
+
+
             $this->response([
                     'status' => 'success', // "success", "fail", "not available", 
                     'message' => '',
@@ -453,8 +477,6 @@ class Group extends Service_Controller {
         }
     }
 
-
-    
     /**
      * @api {get} /group/circulate - Circulate
      * @apiVersion 0.1.0

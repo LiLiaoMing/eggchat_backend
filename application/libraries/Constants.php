@@ -19,13 +19,13 @@ define('PERMISSION_U_GROUP', 8);
  * QuickBox constants
  ******************************/
 /* For Real Server */
-define('QB_APP_ID', "44058");
-define('QB_AUTH_KEY', "8kPuDhdcOfV49bK");
-define('QB_AUTH_SECRET', "txtcntjP7sSc6BO");
+// define('QB_APP_ID', "44058");
+// define('QB_AUTH_KEY', "8kPuDhdcOfV49bK");
+// define('QB_AUTH_SECRET', "txtcntjP7sSc6BO");
 /* For Local Server */
-// define('QB_APP_ID', "45454");
-// define('QB_AUTH_KEY', "BEf-7uN7q4MAv9n");
-// define('QB_AUTH_SECRET', "tCqYbyhma7syc2C");
+define('QB_APP_ID', "45454");
+define('QB_AUTH_KEY', "BEf-7uN7q4MAv9n");
+define('QB_AUTH_SECRET', "tCqYbyhma7syc2C");
 /*-----------------*/
 define('QB_API_ENDPOINT', "https://api.quickblox.com");
 define('QB_PATH_SESSION', "session.json");
