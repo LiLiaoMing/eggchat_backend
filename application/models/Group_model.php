@@ -59,8 +59,6 @@ class Group_model extends CI_Model {
         $this->db->join('users', 'groups.owner_id = users.id', 'left');
 
         $this->db->where('groups.owner_id', $uid);
-        if ($path)
-            $this->db->like('users.path', $path);
 
         $this->db->or_like('users.path', '.'.$uid.'.');
         if ($current_user->level == 4)
@@ -71,6 +69,8 @@ class Group_model extends CI_Model {
         if ($public)
             $this->db->where('groups.public', $public);
 
+        if ($path)
+            $this->db->like('users.path', $path);
         if ($sort_field)
             $this->db->order_by($sort_field, $sort_method);
 
@@ -95,8 +95,6 @@ class Group_model extends CI_Model {
         $this->db->join('users', 'groups.owner_id = users.id', 'left');
 
         $this->db->where('groups.owner_id', $uid);
-        if ($path)
-            $this->db->like('users.path', $path);
         $this->db->or_like('users.path', '.'.$uid.'.');
         if ($current_user->level == 4)
             $this->db->or_where('users.path', $current_user->path);
@@ -104,6 +102,8 @@ class Group_model extends CI_Model {
             $this->db->or_where('users.level', 5);
         if ($public)
             $this->db->where('groups.public', $public);
+        if ($path)
+            $this->db->like('users.path', $path);
 
         $query = $this->db->get();
         return $query->num_rows();
