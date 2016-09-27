@@ -66,7 +66,7 @@ class User extends Service_Controller {
             /*******************************************************************************************
              * Insert new record to table(users) 
              *******************************************************************************************/
-            if ( count($this->user->get(null, $this->post('username'))) > 0)
+            if ( count($this->user->get(null, $this->post('username'), null, null, null, null, null, null, null, $this->post('path'))) > 0)
             {
                 $this->response([
                     'status' => 'fail', // "success", "fail", "not available", 

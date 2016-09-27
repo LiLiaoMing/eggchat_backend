@@ -127,6 +127,7 @@ class Group extends Service_Controller {
      * @apiParam {String} sort_field       <code>optional</code> Sort field.
      * @apiParam {String} sort_method      <code>optional</code> Sort method(asc, desc).
      * @apiParam {Number} public           <code>optional</code> Public.
+     * @apiParam {String} path             <code>optional</code> Path.
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
      *
