@@ -459,10 +459,10 @@ class Group extends Service_Controller {
             {
 
                 $property_name = $GLOBALS['sort_field'];
-                // if ( $GLOBALS['sort_method'] == 'asc')
+                if ( $GLOBALS['sort_method'] == 'asc')
                     return strcmp($a->{$property_name}, $b->{$property_name});
-                // else
-                //     return !strcmp($a->{$property_name}, $b->{$property_name});
+                else
+                    return !strcmp($a->{$property_name}, $b->{$property_name});
 
             }
             
