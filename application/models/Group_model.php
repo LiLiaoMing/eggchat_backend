@@ -59,13 +59,15 @@ class Group_model extends CI_Model {
         $this->db->join('users', 'groups.owner_id = users.id', 'left');
 
         $this->db->where('groups.owner_id', $uid);
+        $this->db->like('users.path', $current_user->path);
         $this->db->or_like('users.path', '.'.$uid.'.');
         // if ($current_user->level == 4)
         //     $this->db->or_where('users.path', $current_user->path);
         if ($current_user->level == 5)
             $this->db->or_where('users.level', 5);
-        else
-            $this->db->or_where('users.path', $current_user->path);
+        // else
+        //     $this->db->or_where('users.path', $current_user->path);
+        
         if ($public)
             $this->db->where('groups.public', $public);
 
