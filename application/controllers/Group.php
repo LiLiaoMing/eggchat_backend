@@ -152,6 +152,7 @@ class Group extends Service_Controller {
                     'result'=>$this->group->search(
                                     $this->current_user['uid'], 
                                     $this->get('public'), 
+                                    $this->get('path'),
                                     $this->get('sort_field'), 
                                     $this->get('sort_method'), 
                                     $this->get('amount'),
@@ -160,7 +161,8 @@ class Group extends Service_Controller {
                     
                     'count'=>$this->group->search_count(
                                     $this->current_user['uid'], 
-                                    $this->get('public')
+                                    $this->get('public'),
+                                    $this->get('path')
                                     )
                     ]
             ], REST_Controller::HTTP_OK);        
