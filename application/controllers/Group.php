@@ -148,6 +148,7 @@ class Group extends Service_Controller {
         {
             if ($this->get('from_mobile'))
             {
+                $this->response('here', REST_Controller::HTTP_OK);
                 $this->response([
                                 'status' => 'success', // "success", "fail", "not available", 
                                 'message' => '',
