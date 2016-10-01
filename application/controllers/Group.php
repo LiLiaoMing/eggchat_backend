@@ -146,9 +146,6 @@ class Group extends Service_Controller {
 
         if ($v->validate())
         {
-            
-            $this->response($this->get(), REST_Controller::HTTP_OK);
-
             if ($this->get('from_mobile'))
             {
                 $this->response([
