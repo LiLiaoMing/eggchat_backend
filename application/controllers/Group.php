@@ -130,6 +130,7 @@ class Group extends Service_Controller {
      * @apiParam {String} path             <code>optional</code> Path.
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
+     # @apiParam {Number} from_mobile      <code>optional</code> Setting for from-mobile.
      *
      * @apiUse Authentication
      *
@@ -141,32 +142,51 @@ class Group extends Service_Controller {
             return;
 
         $v = $this->new_validator($this->get());
-        $v->rule('integer', ['public', 'offset', 'amount']);
+        $v->rule('integer', ['public', 'offset', 'amount', 'from_mobile']);
 
         if ($v->validate())
         {
-            $this->response([
-                'status' => 'success', // "success", "fail", "not available", 
-                'message' => '',
-                'code' => 200,
-                'data' => [
-                    'result'=>$this->group->search(
-                                    $this->current_user['uid'], 
-                                    $this->get('public'), 
-                                    $this->get('path'),
-                                    $this->get('sort_field'), 
-                                    $this->get('sort_method'), 
-                                    $this->get('amount'),
-                                    $this->get('offset')
-                                    ),
-                    
-                    'count'=>$this->group->search_count(
-                                    $this->current_user['uid'], 
-                                    $this->get('public'),
-                                    $this->get('path')
-                                    )
-                    ]
-            ], REST_Controller::HTTP_OK);        
+            if ($this->get('from_mobile'))
+            {
+                $this->response([
+                                'status' => 'success', // "success", "fail", "not available", 
+                                'message' => '',
+                                'code' => 200,
+                                'data' => [
+                                    'result'=>$this->group->search_for_mobile(
+                                                    $this->get('amount'),
+                                                    $this->get('offset')
+                                                    ),
+                                    
+                                    'count'=>$this->group->search_count_for_mobile()
+                                    ]
+                            ], REST_Controller::HTTP_OK);    
+            }
+            else
+            {
+                $this->response([
+                                'status' => 'success', // "success", "fail", "not available", 
+                                'message' => '',
+                                'code' => 200,
+                                'data' => [
+                                    'result'=>$this->group->search(
+                                                    $this->current_user['uid'], 
+                                                    $this->get('public'), 
+                                                    $this->get('path'),
+                                                    $this->get('sort_field'), 
+                                                    $this->get('sort_method'), 
+                                                    $this->get('amount'),
+                                                    $this->get('offset')
+                                                    ),
+                                    
+                                    'count'=>$this->group->search_count(
+                                                    $this->current_user['uid'], 
+                                                    $this->get('public'),
+                                                    $this->get('path')
+                                                    )
+                                    ]
+                            ], REST_Controller::HTTP_OK);    
+            }    
         }
         else
         {

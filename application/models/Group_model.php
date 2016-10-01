@@ -135,4 +135,26 @@ class Group_model extends CI_Model {
         $query = $this->db->get();
         return $query->result();
     }
+
+    function search_for_mobile ($limit = null, $offset = null)  
+    {
+        $this->db->select('*');
+        $this->db->from('groups');
+
+        if ($limit == null)
+            $limit = PHP_INT_MAX;
+
+        $this->db->limit($limit, $offset);       
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    function search_count_for_mobile ()  
+    {
+        $this->db->select('*');
+        $this->db->from('groups');
+
+        $query = $this->db->get();
+        return $query->num_rows();
+    }
 }
