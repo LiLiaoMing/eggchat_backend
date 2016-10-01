@@ -130,7 +130,7 @@ class Group extends Service_Controller {
      * @apiParam {String} path             <code>optional</code> Path.
      * @apiParam {String} offset           <code>optional</code> Offset.
      * @apiParam {String} amount           <code>optional</code> Amount per a page.
-     # @apiParam {Number} from_mobile      <code>optional</code> Setting for from-mobile.
+     * @apiParam {Number} from_mobile      <code>optional</code> Setting for from-mobile.
      *
      * @apiUse Authentication
      *
