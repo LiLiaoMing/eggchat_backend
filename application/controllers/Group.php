@@ -228,8 +228,7 @@ class Group extends Service_Controller {
                                                 null,
                                                 null,
                                                 null,
-                                                null,
-                                                );
+                                                null);
 
             $user_qb_ids = [];
 
