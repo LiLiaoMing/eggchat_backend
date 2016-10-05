@@ -200,6 +200,78 @@ class Group extends Service_Controller {
 
 
     /**
+     * @api {get} /group/allusers -(admin) Groups All Users
+     * @apiVersion 0.1.0
+     * @apiName GroupsAllUsers
+     * @apiGroup Group
+     *
+     * @apiParam {String} path            <code>mandatory</code> User path.
+     *
+     * @apiUse Authentication
+     *
+     * @apiUse SearchResponse
+     */
+    public function allusers_get()
+    {
+        if ($this->check_auth() == false)
+            return;
+
+        $v = $this->new_validator($this->get());
+        $v->rule('required', ['path']);
+
+        if ($v->validate())
+        {
+            $groups = $this->group->search(
+                                                $this->current_user['uid'], 
+                                                null,
+                                                $this->get('path'),
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                );
+
+            $user_qb_ids = [];
+
+            for($i=0; $i<count($groups); $i++)
+            {
+                $new_array = explode(",", substr($groups->occupants_ids, 1, -1));
+                for($j=0; $j<count($new_array); $j++)
+                {
+                    if (!in_array($new_array[$j], $user_qb_ids))
+                    {
+                        $user_qb_ids[] = $new_array[$j];
+                    }
+                }
+            }
+
+            $users = [];
+            for($i=0; $i<count($user_qb_ids); $i++)
+            {
+                $users[] = $this->user->get_by_qbid($user_qb_ids[$i])[0];
+            }
+
+            $this->response([
+                    'status' => 'success', // "success", "fail", "not available", 
+                    'message' => '',
+                    'data' => [
+                        'result'=>$users,
+                        'count'=>count($users)
+                        ]
+                ], REST_Controller::HTTP_OK);
+        }
+        else
+        {
+            $this->response([
+                'status' => 'fail', // "success", "fail", "not available", 
+                'message' => $v->errors(),
+                'data' => null
+            ], REST_Controller::HTTP_BAD_REQUEST);  
+        }
+    }
+
+
+    /**
      * @apiDefine UpdateGroupResponse
      * @apiSuccess {String}     status              Status of the API call.
      * @apiSuccess {String}     message             Description of the API call status.
