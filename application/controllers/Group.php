@@ -234,7 +234,7 @@ class Group extends Service_Controller {
 
             for($i=0; $i<count($groups); $i++)
             {
-                $new_array = explode(",", substr($groups->occupants_ids, 1, -1));
+                $new_array = explode(",", substr($groups[$i]->occupants_ids, 1, -1));
                 for($j=0; $j<count($new_array); $j++)
                 {
                     if (!in_array($new_array[$j], $user_qb_ids))
