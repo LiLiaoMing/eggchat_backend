@@ -18,10 +18,16 @@ define('PERMISSION_U_GROUP', 8);
 /******************************
  * QuickBox constants
  ******************************/
-/* For Real Server */
-define('QB_APP_ID', "44058");
-define('QB_AUTH_KEY', "8kPuDhdcOfV49bK");
-define('QB_AUTH_SECRET', "txtcntjP7sSc6BO");
+/* For Real Server (dev) */
+define('QB_APP_ID', "43612");
+define('QB_AUTH_KEY', "LRTszZxRQ8djknY");
+define('QB_AUTH_SECRET', "TeN8f6txW9mKyxy");
+
+/* For Real Server (dev) */
+// define('QB_APP_ID', "44058");
+// define('QB_AUTH_KEY', "8kPuDhdcOfV49bK");
+// define('QB_AUTH_SECRET', "txtcntjP7sSc6BO");
+
 /* For Local Server */
 // define('QB_APP_ID', "45454");
 // define('QB_AUTH_KEY', "BEf-7uN7q4MAv9n");
